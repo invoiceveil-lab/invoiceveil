@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "test:e2e": ".\\node_modules\\.bin\\tsx.cmd test\\e2e.test.ts"
+    "test:e2e": ".\\node_modules\\.bin\\tsx.cmd test\\e2e.test.ts",
+    "test:circuit": "tsx test/poseidon_commit.test.ts"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^16.0.1",
