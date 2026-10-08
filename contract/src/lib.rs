@@ -38,6 +38,9 @@ impl InvoiceVeilContract {
         hi_bound: u64,
     ) -> u64 {
         payer.require_auth();
+        // Self-referential invoices are intentionally unsupported: a payer that
+        // pays itself has no distinct counterparty to verify against.
+        assert!(payee != payer, "payee cannot be the payer");
         assert!(lo_bound < hi_bound, "invalid bounds");
 
         let id = Self::next_id(&env);
@@ -144,12 +147,47 @@ impl InvoiceVeilContract {
 #[cfg(test)]
 mod tests {
     use super::invoice::empty_commitment;
-    use soroban_sdk::Env;
+    use super::{InvoiceVeilContract, InvoiceVeilContractClient};
+    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::{Address, Env};
 
     #[test]
     fn empty_commitment_is_zeroed_bytes() {
         let env = Env::default();
         let empty = empty_commitment(&env);
         assert_eq!(empty.to_array(), [0u8; 32]);
+    }
+
+    #[test]
+    fn register_invoice_accepts_distinct_payee() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+
+        let id = client.register_invoice(&payer, &payee, &100, &500);
+        assert_eq!(id, 0);
+
+        let invoice = client.get_invoice(&id);
+        assert_eq!(invoice.payer, payer);
+        assert_eq!(invoice.payee, payee);
+    }
+
+    #[test]
+    #[should_panic(expected = "payee cannot be the payer")]
+    fn register_invoice_rejects_self_payee() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+
+        let payer = Address::generate(&env);
+
+        client.register_invoice(&payer, &payer, &100, &500);
     }
 }
