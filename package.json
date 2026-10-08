@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "test:e2e": ".\\node_modules\\.bin\\tsx.cmd test\\e2e.test.ts"
+    "test": "npm run test:e2e",
+    "test:e2e": "tsx test/e2e.test.ts"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^16.0.1",
