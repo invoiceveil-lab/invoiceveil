@@ -5,7 +5,7 @@ import { InvoiceForm } from "./InvoiceForm";
 import { InvoiceList } from "./InvoiceList";
 import { SettleInvoice } from "./SettleInvoice";
 import { useInvoices } from "../hooks/useInvoices";
-import { truncateMiddle } from "../lib/format";
+import { defaultInvoiceId, truncateMiddle } from "../lib/format";
 import type { InvoiceRecord, TxLifecycleEvent } from "../types";
 
 type TabId = "overview" | "create" | "settle" | "feed" | "audit";
@@ -97,6 +97,7 @@ export function DashboardPage({ stellar, onDisconnectToLanding }: DashboardPageP
   const txHash = useMemo(() => stellar.lastEvent?.hash, [stellar.lastEvent]);
   const pendingCount = invoices.filter((invoice) => invoice.status === "Pending").length;
   const settledCount = invoices.filter((invoice) => invoice.status === "Settled").length;
+  const firstInvoiceId = useMemo(() => defaultInvoiceId(invoices), [invoices]);
   const currentPage = pageCopy[activeTab];
 
   return (
@@ -166,9 +167,9 @@ export function DashboardPage({ stellar, onDisconnectToLanding }: DashboardPageP
             </section>
           ) : null}
           {activeTab === "create" ? <InvoiceForm onRegister={stellar.registerInvoice} /> : null}
-          {activeTab === "settle" ? <SettleInvoice invoiceLookup={getById} onSettle={stellar.settleInvoice} txMessage={stellar.lastEvent?.message} txHash={txHash} /> : null}
+          {activeTab === "settle" ? <SettleInvoice invoiceLookup={getById} onSettle={stellar.settleInvoice} defaultInvoiceId={firstInvoiceId} txMessage={stellar.lastEvent?.message} txHash={txHash} /> : null}
           {activeTab === "feed" ? <InvoiceList invoices={invoices} loading={loading} onRefresh={refresh} /> : null}
-          {activeTab === "audit" ? <AuditorView onVerify={stellar.verifyDisclosure} /> : null}
+          {activeTab === "audit" ? <AuditorView onVerify={stellar.verifyDisclosure} defaultInvoiceId={firstInvoiceId} /> : null}
         </main>
       </div>
     </div>
