@@ -175,7 +175,7 @@ cargo test
 This is a hackathon-grade testnet implementation, not audited production software.
 
 - Settlement currently updates the invoice state after proof verification; it does **not** transfer USDC yet.
-- Auditor disclosure is checked client-side because the deployed contract's `verify_disclosure` method does not yet recompute Poseidon on-chain.
+- Auditor disclosure is verified client-side: the client recomputes the Poseidon commitment from the disclosed `(amount, salt)` and compares it with the invoice's stored commitment.
 - The dashboard tracks known invoice IDs locally instead of using a production indexer.
 - The Groth16 setup is suitable for demonstration; production requires a dedicated multi-party ceremony and security review.
 - Proof generation adds a large browser payload and can take several seconds on lower-powered devices.

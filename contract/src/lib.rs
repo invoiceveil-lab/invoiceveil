@@ -91,16 +91,11 @@ impl InvoiceVeilContract {
             .publish((Symbol::new(&env, "InvoiceSettled"),), (id, invoice.commitment));
     }
 
-    pub fn verify_disclosure(env: Env, id: u64, amount: u64, salt: u64) -> bool {
-        let _invoice = load_invoice(&env, id);
-        let _amount = amount;
-        let _salt = salt;
-
-        // Pending: Soroban currently exposes Poseidon through the hazmat interface.
-        // Once we wire the BN254 Poseidon parameters safely, this method should
-        // recompute the commitment and compare it with the stored invoice value.
-        false
-    }
+    // NOTE: the always-false `verify_disclosure` stub was removed. Selective
+    // disclosure is verified off-chain (see README "Current Scope"): the client
+    // recomputes Poseidon over the disclosed `(amount, salt)` and compares it
+    // with the invoice's stored commitment. Re-introduce an on-chain variant only
+    // once the BN254 Poseidon parameters are wired through the hazmat host API.
 
     pub fn get_invoice(env: Env, id: u64) -> Invoice {
         load_invoice(&env, id)
