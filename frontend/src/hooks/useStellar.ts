@@ -185,7 +185,22 @@ export function useStellar() {
     setBalance("Demo");
     setLastEvent(null);
     window.localStorage.removeItem(WALLET_STORAGE_KEY);
-    void StellarWalletsKit.disconnect().catch(() => undefined);
+
+    // The wallet kit is only initialised by a real (live) connect; calling
+    // disconnect before init is a no-op at best and can throw, so skip it. Only
+    // the benign "nothing to disconnect" cases are swallowed.
+    if (!walletKitInitialized) {
+      return;
+    }
+
+    void StellarWalletsKit.disconnect().catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      if (/not connected|no (active )?wallet|user (rejected|declined)|rejected by user/i.test(message)) {
+        return;
+      }
+
+      console.error("Unexpected error while disconnecting the Stellar wallet kit.", error);
+    });
   };
 
   const registerInvoice = async (payee: string, loBound: bigint, hiBound: bigint): Promise<bigint> => {
