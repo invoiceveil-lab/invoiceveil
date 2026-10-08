@@ -166,7 +166,7 @@ export function DashboardPage({ stellar, onDisconnectToLanding }: DashboardPageP
             </section>
           ) : null}
           {activeTab === "create" ? <InvoiceForm onRegister={stellar.registerInvoice} /> : null}
-          {activeTab === "settle" ? <SettleInvoice invoiceLookup={getById} onSettle={stellar.settleInvoice} txMessage={stellar.lastEvent?.message} txHash={txHash} /> : null}
+          {activeTab === "settle" ? <SettleInvoice invoiceLookup={getById} onSettle={stellar.settleInvoice} txMessage={stellar.lastEvent?.message} txHash={txHash} txError={stellar.lastEvent?.type === "TxFailed" ? stellar.lastEvent?.message : undefined} /> : null}
           {activeTab === "feed" ? <InvoiceList invoices={invoices} loading={loading} onRefresh={refresh} /> : null}
           {activeTab === "audit" ? <AuditorView onVerify={stellar.verifyDisclosure} /> : null}
         </main>
