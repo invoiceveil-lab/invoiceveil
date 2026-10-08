@@ -250,6 +250,10 @@ export function useStellar() {
       }
 
       const invoices = readInvoices();
+      if (!invoices.some((invoice) => invoice.id === invoiceId)) {
+        throw new Error("Enter an invoice ID that exists in the feed first.");
+      }
+
       const txHash = fakeHash("demo");
       const updated = invoices.map((invoice) =>
         invoice.id === invoiceId

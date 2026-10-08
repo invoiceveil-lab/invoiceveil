@@ -486,27 +486,15 @@ export async function submitProofToStellar(
 
   if (APP_MODE === "demo") {
     const txHash = `demo${crypto.randomUUID().replace(/-/g, "").slice(0, 48)}`;
-    const updated =
-      updateCachedInvoice(invoiceId, (invoice) => ({
-        ...invoice,
-        commitment: signals.commitment,
-        status: "Settled",
-        txHash,
-      })) ??
-      null;
+    const updated = updateCachedInvoice(invoiceId, (invoice) => ({
+      ...invoice,
+      commitment: signals.commitment,
+      status: "Settled",
+      txHash,
+    }));
 
     if (!updated) {
-      upsertInvoice({
-        id: invoiceId,
-        payer: config.payer,
-        payee: "",
-        loBound: BigInt(signals.lo_bound),
-        hiBound: BigInt(signals.hi_bound),
-        commitment: signals.commitment,
-        status: "Settled",
-        txHash,
-        createdAt: new Date().toISOString(),
-      });
+      throw new Error("Enter an invoice ID that exists in the feed first.");
     }
 
     emit(config, { type: "TxBroadcast", message: "Demo settlement recorded locally.", hash: txHash });
