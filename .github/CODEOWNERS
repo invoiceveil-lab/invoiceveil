@@ -1,0 +1,8 @@
+# Default owners for everything in the repository.
+*                       @ShivamSoni20
+
+# Contract, circuit, prover and workflow changes require owner review.
+/contract/              @ShivamSoni20
+/circuits/              @ShivamSoni20
+/prover/                @ShivamSoni20
+/.github/               @ShivamSoni20
