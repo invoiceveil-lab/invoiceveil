@@ -3,10 +3,28 @@ import path from "node:path";
 
 const root = process.cwd();
 const keysDir = path.join(root, "keys");
+const vkPath = path.join(keysDir, "verification_key.json");
+const fixturePath = path.join(root, "test", "fixtures", "valid_proof.json");
 
-const vk = JSON.parse(fs.readFileSync(path.join(keysDir, "verification_key.json"), "utf8"));
-const proof = JSON.parse(fs.readFileSync(path.join(keysDir, "sample_proof.json"), "utf8"));
-const publicSignals = JSON.parse(fs.readFileSync(path.join(keysDir, "sample_public.json"), "utf8"));
+if (!fs.existsSync(vkPath)) {
+  console.error(`Missing verification key at ${path.relative(root, vkPath)}.`);
+  process.exit(1);
+}
+
+if (!fs.existsSync(fixturePath)) {
+  console.error(
+    `Missing proof fixture at ${path.relative(root, fixturePath)}.\n` +
+      "Generate it first with:\n" +
+      "  npx tsx prover/src/generate_test_fixture.ts",
+  );
+  process.exit(1);
+}
+
+// generate_test_fixture.ts emits { proof, publicSignals, rawPublicSignals, salt }.
+const vk = JSON.parse(fs.readFileSync(vkPath, "utf8"));
+const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+const proof = fixture.proof;
+const publicSignals = fixture.rawPublicSignals;
 
 function decToHex32(value) {
   return BigInt(value).toString(16).padStart(64, "0");
