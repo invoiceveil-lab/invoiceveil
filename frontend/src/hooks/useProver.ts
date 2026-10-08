@@ -39,7 +39,7 @@ export function useProver() {
       }
 
       setStatus("error");
-      setError(message.payload.message);
+      setError(typeof message.payload?.message === "string" ? message.payload.message : "Unknown prover worker message.");
     };
 
     workerRef.current = worker;
