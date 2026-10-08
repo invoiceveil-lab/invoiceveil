@@ -28,6 +28,12 @@ jobs:
       - run: npm ci --ignore-scripts
         working-directory: .
       - run: npm ci --ignore-scripts
+      - name: Lint TypeScript sources
+        run: npm run lint
+        working-directory: .
+      - name: Check formatting
+        run: npx prettier --check "frontend/src/**/*.{ts,tsx}" "prover/src/**/*.ts" "test/**/*.ts" "shared/**/*.ts"
+        working-directory: .
       - run: npm run type-check
       - run: npm test
       - run: npm run build

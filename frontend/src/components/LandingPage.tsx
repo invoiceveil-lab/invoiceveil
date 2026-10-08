@@ -31,7 +31,12 @@ export function LandingPage({ mode, isConnecting, isConnected, onConnectWallet, 
             Open dashboard
           </button>
         ) : (
-          <button type="button" className="primary-button" onClick={() => void onConnectWallet()} disabled={isConnecting}>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => void onConnectWallet()}
+            disabled={isConnecting}
+          >
             {isConnecting ? "Connecting..." : "Connect wallet"}
           </button>
         )}
@@ -43,8 +48,8 @@ export function LandingPage({ mode, isConnecting, isConnected, onConnectWallet, 
             <p className="landing-eyebrow">{mode === "live" ? "Stellar testnet is active" : "Demo mode available"}</p>
             <h1>Private invoice settlement on Stellar, with ZK controlling the settlement path.</h1>
             <p className="landing-copy">
-              InvoiceVeil lets a business send a USDC payment on Stellar and prove the invoice amount satisfies a privately
-              agreed contract bound without revealing the actual amount on-chain.
+              InvoiceVeil lets a business send a USDC payment on Stellar and prove the invoice amount satisfies a
+              privately agreed contract bound without revealing the actual amount on-chain.
             </p>
 
             <div className="landing-actions">
@@ -53,7 +58,12 @@ export function LandingPage({ mode, isConnecting, isConnected, onConnectWallet, 
                   Launch dashboard
                 </button>
               ) : (
-                <button type="button" className="primary-button" onClick={() => void onConnectWallet()} disabled={isConnecting}>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={() => void onConnectWallet()}
+                  disabled={isConnecting}
+                >
                   {isConnecting ? "Connecting wallet..." : "Connect testnet wallet"}
                 </button>
               )}
@@ -79,8 +89,8 @@ export function LandingPage({ mode, isConnecting, isConnected, onConnectWallet, 
               <p className="metric-label">Invoice #018</p>
               <h2>$10,000 to $50,000</h2>
               <p>
-                The contract stores payer, payee, bounds, commitment, and settlement state. The private amount never becomes
-                public chain data.
+                The contract stores payer, payee, bounds, commitment, and settlement state. The private amount never
+                becomes public chain data.
               </p>
             </div>
 
@@ -112,11 +122,16 @@ export function LandingPage({ mode, isConnecting, isConnected, onConnectWallet, 
           </article>
           <article className="landing-strip">
             <strong>ZK is load-bearing</strong>
-            <p>Settlement is supposed to pass only when the proof verifies and the bounds match the registered invoice.</p>
+            <p>
+              Settlement is supposed to pass only when the proof verifies and the bounds match the registered invoice.
+            </p>
           </article>
           <article className="landing-strip">
             <strong>Auditor path exists</strong>
-            <p>Amount plus salt can be shared privately later to confirm the commitment without changing chain visibility.</p>
+            <p>
+              Amount plus salt can be shared privately later to confirm the commitment without changing chain
+              visibility.
+            </p>
           </article>
           <article className="landing-strip">
             <strong>Built for Stellar</strong>
@@ -129,8 +144,8 @@ export function LandingPage({ mode, isConnecting, isConnected, onConnectWallet, 
             <p className="landing-eyebrow">End-to-end flow</p>
             <h2>From invoice registration to private settlement in four steps.</h2>
             <p>
-              The app is intentionally narrow: register invoice bounds, generate a browser proof, verify on Soroban, and keep
-              the public feed commercially safe.
+              The app is intentionally narrow: register invoice bounds, generate a browser proof, verify on Soroban, and
+              keep the public feed commercially safe.
             </p>
           </div>
 
@@ -179,7 +194,9 @@ export function LandingPage({ mode, isConnecting, isConnected, onConnectWallet, 
             </article>
             <article className="landing-architecture-item">
               <h3>Dashboard app</h3>
-              <p>Handles wallet connection, invoice registration, settlement, feed visibility, and audit disclosure UX.</p>
+              <p>
+                Handles wallet connection, invoice registration, settlement, feed visibility, and audit disclosure UX.
+              </p>
             </article>
           </div>
         </section>
@@ -187,14 +204,22 @@ export function LandingPage({ mode, isConnecting, isConnected, onConnectWallet, 
         <section className="landing-cta">
           <div>
             <h2>Launch the testnet dashboard and run the full flow.</h2>
-            <p>Use a funded Stellar testnet wallet, create an invoice, generate the proof, and submit the settlement transaction.</p>
+            <p>
+              Use a funded Stellar testnet wallet, create an invoice, generate the proof, and submit the settlement
+              transaction.
+            </p>
           </div>
           {isConnected ? (
             <button type="button" className="primary-button" onClick={onOpenDashboard}>
               Continue to dashboard
             </button>
           ) : (
-            <button type="button" className="primary-button" onClick={() => void onConnectWallet()} disabled={isConnecting}>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={() => void onConnectWallet()}
+              disabled={isConnecting}
+            >
               {isConnecting ? "Connecting..." : "Connect wallet to continue"}
             </button>
           )}

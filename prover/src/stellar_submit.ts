@@ -1,15 +1,20 @@
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { buildPoseidon } from "circomlibjs";
 
-import type { InvoiceRecord, InvoiceStatus, InvoiceVeilMode, PublicSignals, TxLifecycleEvent } from "../../shared/types.js";
+import type {
+  InvoiceRecord,
+  InvoiceStatus,
+  InvoiceVeilMode,
+  PublicSignals,
+  TxLifecycleEvent,
+} from "../../shared/types.js";
 import { fieldElemToBytes32, g1PointToBytes64, g2PointToBytes128 } from "./converters.js";
 
-const CONTRACT_ID =
-  import.meta.env?.VITE_CONTRACT_ID ?? "CALOHKUYNCYIPPICYZMDALGKV2V7QHADOXZGH3MIQQ5CR2WTD45OC5VI";
+const CONTRACT_ID = import.meta.env?.VITE_CONTRACT_ID ?? "CALOHKUYNCYIPPICYZMDALGKV2V7QHADOXZGH3MIQQ5CR2WTD45OC5VI";
 const RPC_URL = import.meta.env?.VITE_RPC_URL ?? "https://soroban-testnet.stellar.org";
-const NETWORK_PASSPHRASE =
-  import.meta.env?.VITE_NETWORK_PASSPHRASE ?? "Test SDF Network ; September 2015";
-const APP_MODE = (import.meta.env?.VITE_INVOICEVEIL_MODE ?? (typeof window === "undefined" ? "demo" : "live")) as InvoiceVeilMode;
+const NETWORK_PASSPHRASE = import.meta.env?.VITE_NETWORK_PASSPHRASE ?? "Test SDF Network ; September 2015";
+const APP_MODE = (import.meta.env?.VITE_INVOICEVEIL_MODE ??
+  (typeof window === "undefined" ? "demo" : "live")) as InvoiceVeilMode;
 const STORAGE_KEY = "invoiceveil-demo-invoices";
 const memoryStorage = new Map<string, string>();
 const ZERO_COMMITMENT = "0x" + "0".repeat(64);
@@ -135,9 +140,7 @@ function bigintFromUnknown(value: unknown): bigint {
 
 function readInvoices(): InvoiceRecord[] {
   const raw =
-    typeof window === "undefined"
-      ? memoryStorage.get(STORAGE_KEY) ?? null
-      : window.localStorage.getItem(STORAGE_KEY);
+    typeof window === "undefined" ? (memoryStorage.get(STORAGE_KEY) ?? null) : window.localStorage.getItem(STORAGE_KEY);
 
   if (!raw) {
     return [];
@@ -166,7 +169,10 @@ function upsertInvoice(invoice: InvoiceRecord) {
   writeInvoices([invoice, ...invoices].sort((a, b) => (a.id === b.id ? 0 : a.id > b.id ? -1 : 1)));
 }
 
-function updateCachedInvoice(invoiceId: bigint, updater: (invoice: InvoiceRecord) => InvoiceRecord): InvoiceRecord | null {
+function updateCachedInvoice(
+  invoiceId: bigint,
+  updater: (invoice: InvoiceRecord) => InvoiceRecord,
+): InvoiceRecord | null {
   const invoices = readInvoices();
   const current = invoices.find((invoice) => invoice.id === invoiceId);
   if (!current) {
@@ -492,8 +498,7 @@ export async function submitProofToStellar(
         commitment: signals.commitment,
         status: "Settled",
         txHash,
-      })) ??
-      null;
+      })) ?? null;
 
     if (!updated) {
       upsertInvoice({

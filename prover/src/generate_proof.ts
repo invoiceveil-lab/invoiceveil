@@ -63,11 +63,7 @@ export async function generateInvoiceProof(input: InvoiceInput): Promise<Invoice
   const circuitInput = toCircuitInput(input, salt, commitment);
   const { wasmPath, zkeyPath } = await resolveProverArtifacts();
   try {
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
-      circuitInput,
-      wasmPath,
-      zkeyPath,
-    );
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(circuitInput, wasmPath, zkeyPath);
 
     return {
       proof,
@@ -76,8 +72,6 @@ export async function generateInvoiceProof(input: InvoiceInput): Promise<Invoice
       salt,
     };
   } catch (error) {
-    throw new Error(
-      `Proof generation failed: ${error instanceof Error ? error.message : "unknown SnarkJS error"}`,
-    );
+    throw new Error(`Proof generation failed: ${error instanceof Error ? error.message : "unknown SnarkJS error"}`);
   }
 }

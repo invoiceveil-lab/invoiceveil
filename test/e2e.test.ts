@@ -1,12 +1,7 @@
 import assert from "node:assert/strict";
 
 import { generateInvoiceProof } from "../prover/src/generate_proof.js";
-import {
-  getInvoice,
-  registerInvoice,
-  submitProofToStellar,
-  verifyDisclosure,
-} from "../prover/src/stellar_submit.js";
+import { getInvoice, registerInvoice, submitProofToStellar, verifyDisclosure } from "../prover/src/stellar_submit.js";
 
 async function runE2E() {
   console.log("=== InvoiceVeil E2E Test ===\n");
@@ -20,9 +15,15 @@ async function runE2E() {
   const proofResult = await generateInvoiceProof({ amount: 25000n, loBound: 10000n, hiBound: 50000n });
   console.log("✓ Proof generated, size:", JSON.stringify(proofResult.proof).length, "bytes");
 
-  const txHash = await submitProofToStellar(id, proofResult.proof, proofResult.publicSignals, proofResult.rawPublicSignals, {
-    payer,
-  });
+  const txHash = await submitProofToStellar(
+    id,
+    proofResult.proof,
+    proofResult.publicSignals,
+    proofResult.rawPublicSignals,
+    {
+      payer,
+    },
+  );
   console.log("✓ Proof verified on Stellar, tx:", txHash);
 
   const invoice = await getInvoice(id);
