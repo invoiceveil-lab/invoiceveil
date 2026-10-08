@@ -400,6 +400,20 @@ function requireViewer(viewer?: string): string {
   throw new Error("A connected Stellar address is required for live contract reads.");
 }
 
+export function registerInvoiceArgs(
+  payer: string,
+  payee: string,
+  loBound: bigint,
+  hiBound: bigint,
+): StellarSdk.xdr.ScVal[] {
+  return [
+    StellarSdk.Address.fromString(payer).toScVal(),
+    StellarSdk.Address.fromString(payee).toScVal(),
+    StellarSdk.xdr.ScVal.scvU64(StellarSdk.xdr.Uint64.fromString(loBound.toString())),
+    StellarSdk.xdr.ScVal.scvU64(StellarSdk.xdr.Uint64.fromString(hiBound.toString())),
+  ];
+}
+
 export async function registerInvoice(
   payee: string,
   loBound: bigint,
@@ -433,13 +447,7 @@ export async function registerInvoice(
     networkPassphrase: NETWORK_PASSPHRASE,
   })
     .addOperation(
-      contract.call(
-        "register_invoice",
-        StellarSdk.Address.fromString(config.payer).toScVal(),
-        StellarSdk.Address.fromString(payee).toScVal(),
-        StellarSdk.xdr.ScVal.scvU64(StellarSdk.xdr.Uint64.fromString(loBound.toString())),
-        StellarSdk.xdr.ScVal.scvU64(StellarSdk.xdr.Uint64.fromString(hiBound.toString())),
-      ),
+      contract.call("register_invoice", ...registerInvoiceArgs(config.payer, payee, loBound, hiBound)),
     )
     .setTimeout(30)
     .build();
