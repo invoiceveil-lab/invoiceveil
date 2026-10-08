@@ -5,6 +5,7 @@ import { FREIGHTER_ID, FreighterModule } from "@creit.tech/stellar-wallets-kit/m
 import { Networks } from "@creit.tech/stellar-wallets-kit/types";
 
 import type { InvoiceRecord, InvoiceVeilMode, TxLifecycleEvent } from "../types";
+import { createDemoTxHash } from "../../../shared/demo";
 import { readInvoices, writeInvoices } from "../lib/storage";
 import {
   getInvoice as fetchInvoice,
@@ -20,10 +21,6 @@ const WALLET_STORAGE_KEY = "invoiceveil-wallet-address";
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
 
 let walletKitInitialized = false;
-
-function fakeHash(prefix: string): string {
-  return `${prefix}${crypto.randomUUID().replace(/-/g, "").slice(0, 48)}`;
-}
 
 async function ensureWalletKit() {
   if (walletKitInitialized) {
@@ -250,7 +247,7 @@ export function useStellar() {
       }
 
       const invoices = readInvoices();
-      const txHash = fakeHash("demo");
+      const txHash = createDemoTxHash();
       const updated = invoices.map((invoice) =>
         invoice.id === invoiceId
           ? {
