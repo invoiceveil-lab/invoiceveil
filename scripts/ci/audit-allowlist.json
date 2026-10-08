@@ -1,0 +1,74 @@
+{
+  "note": "Reviewed allowlist for scripts/ci/audit.mjs. A high or critical advisory is tolerated only for a package listed here; every entry needs a concrete reason. Remove an entry as soon as its dependency can be upgraded.",
+  "packages": {
+    "@stellar/stellar-sdk": {
+      "reason": "Pinned major resolves the Soroban BN254 host-function API used by prover/src; the advisory fix requires a breaking major upgrade tracked separately."
+    },
+    "@trezor/blockchain-link-utils": {
+      "reason": "Transitive of @creit.tech/stellar-wallets-kit; no direct fix without a wallets-kit major upgrade."
+    },
+    "@trezor/connect": {
+      "reason": "Transitive of @creit.tech/stellar-wallets-kit; no direct fix without a wallets-kit major upgrade."
+    },
+    "@trezor/device-authenticity": {
+      "reason": "Transitive of @creit.tech/stellar-wallets-kit; no direct fix without a wallets-kit major upgrade."
+    },
+    "@trezor/protobuf": {
+      "reason": "Transitive of @creit.tech/stellar-wallets-kit; no direct fix without a wallets-kit major upgrade."
+    },
+    "@trezor/transport": {
+      "reason": "Transitive of @creit.tech/stellar-wallets-kit; no direct fix without a wallets-kit major upgrade."
+    },
+    "axios": {
+      "reason": "Transitive of the circom_tester / snarkjs tooling; not used in the shipped frontend or contract runtime."
+    },
+    "bfj": {
+      "reason": "Transitive of the circom tooling chain (circom_tester); build-time only, not shipped."
+    },
+    "brace-expansion": {
+      "reason": "Transitive glob dependency of the circom tooling chain; build-time only, not shipped."
+    },
+    "browserslist": {
+      "reason": "Transitive of the Vite build toolchain; development-time only, not shipped."
+    },
+    "ip-address": {
+      "reason": "Transitive of the wallet/build toolchain; not directly reachable in the shipped bundle."
+    },
+    "jsonpath": {
+      "reason": "Transitive of the circom tooling chain (circom_tester); build-time only, not shipped."
+    },
+    "nanoid": {
+      "reason": "Transitive of the Vite build toolchain; development-time only, not shipped."
+    },
+    "postcss": {
+      "reason": "Transitive of the Vite build toolchain; development-time only, not shipped."
+    },
+    "protobufjs": {
+      "reason": "Transitive of the Stellar wallet/Trezor stack; the fix requires an upstream major upgrade."
+    },
+    "smol-toml": {
+      "reason": "Transitive of the circom tooling chain; parse-time only, not shipped."
+    },
+    "source-map-js": {
+      "reason": "Transitive of the Vite build toolchain; development-time only, not shipped."
+    },
+    "tinypool": {
+      "reason": "Transitive of the vitest test runner; development-time only, not shipped."
+    },
+    "toml": {
+      "reason": "Transitive of the circom tooling chain; parse-time only, not shipped."
+    },
+    "underscore": {
+      "reason": "Transitive of the circom tooling chain (circom_tester); build-time only, not shipped."
+    },
+    "vite": {
+      "reason": "Frontend build toolchain; the advisory fix requires a coordinated major upgrade tracked separately."
+    },
+    "vitest": {
+      "reason": "Frontend test runner; development-time only, not shipped."
+    },
+    "ws": {
+      "reason": "Transitive websocket dependency of the circom tooling chain; not shipped in the frontend bundle."
+    }
+  }
+}
