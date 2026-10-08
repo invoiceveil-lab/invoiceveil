@@ -346,8 +346,15 @@ function simulationErrorMessage(simulation: unknown): string | null {
   return null;
 }
 
-async function waitForTransaction(server: StellarSdk.rpc.Server, hash: string) {
-  for (let attempt = 0; attempt < 25; attempt += 1) {
+export async function waitForTransaction(
+  server: StellarSdk.rpc.Server,
+  hash: string,
+  options: { retries?: number; delayMs?: number } = {},
+) {
+  const retries = options.retries ?? 25;
+  const delayMs = options.delayMs ?? 1500;
+
+  for (let attempt = 0; attempt < retries; attempt += 1) {
     const response = await server.getTransaction(hash);
     if (response.status === "SUCCESS") {
       return response;
@@ -357,7 +364,7 @@ async function waitForTransaction(server: StellarSdk.rpc.Server, hash: string) {
       throw new Error(`Soroban transaction failed on-chain for hash ${hash}.`);
     }
 
-    await delay(1500);
+    await delay(delayMs);
   }
 
   throw new Error(`Timed out waiting for Soroban confirmation for transaction ${hash}.`);
