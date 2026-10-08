@@ -6,7 +6,9 @@ mod verifier;
 
 use invoice::{empty_commitment, load_invoice, save_invoice};
 use soroban_sdk::{contract, contractimpl, Address, Env, Symbol};
-use types::{DataKey, Invoice, InvoiceStatus, Proof, PublicSignals, VerificationKey, VerifierInputs};
+use types::{
+    DataKey, Invoice, InvoiceStatus, Proof, PublicSignals, VerificationKey, VerifierInputs,
+};
 use verifier::verify_groth16;
 
 #[contract]
@@ -52,8 +54,10 @@ impl InvoiceVeilContract {
         };
 
         save_invoice(&env, &invoice);
-        env.events()
-            .publish((Symbol::new(&env, "InvoiceRegistered"),), (id, lo_bound, hi_bound));
+        env.events().publish(
+            (Symbol::new(&env, "InvoiceRegistered"),),
+            (id, lo_bound, hi_bound),
+        );
         id
     }
 
@@ -70,7 +74,10 @@ impl InvoiceVeilContract {
         let mut invoice = load_invoice(&env, id);
         let verification_key = Self::verification_key(&env);
         assert!(invoice.payer == payer, "payer mismatch");
-        assert!(matches!(invoice.status, InvoiceStatus::Pending), "invoice not pending");
+        assert!(
+            matches!(invoice.status, InvoiceStatus::Pending),
+            "invoice not pending"
+        );
         assert!(
             signals.commitment != empty_commitment(&env),
             "commitment cannot be zero"
@@ -78,8 +85,7 @@ impl InvoiceVeilContract {
         assert!(signals.lo_bound == invoice.lo_bound, "lo_bound mismatch");
         assert!(signals.hi_bound == invoice.hi_bound, "hi_bound mismatch");
         assert!(
-            verify_groth16(&env, &verification_key, &proof, &verifier_inputs)
-                .unwrap_or(false),
+            verify_groth16(&env, &verification_key, &proof, &verifier_inputs).unwrap_or(false),
             "invalid zk proof"
         );
 
@@ -87,8 +93,10 @@ impl InvoiceVeilContract {
         invoice.status = InvoiceStatus::Settled;
         save_invoice(&env, &invoice);
 
-        env.events()
-            .publish((Symbol::new(&env, "InvoiceSettled"),), (id, invoice.commitment));
+        env.events().publish(
+            (Symbol::new(&env, "InvoiceSettled"),),
+            (id, invoice.commitment),
+        );
     }
 
     pub fn verify_disclosure(env: Env, id: u64, amount: u64, salt: u64) -> bool {
@@ -111,7 +119,10 @@ impl InvoiceVeilContract {
 
         let mut invoice = load_invoice(&env, id);
         assert!(invoice.payer == payer, "payer mismatch");
-        assert!(matches!(invoice.status, InvoiceStatus::Pending), "invoice not pending");
+        assert!(
+            matches!(invoice.status, InvoiceStatus::Pending),
+            "invoice not pending"
+        );
 
         invoice.status = InvoiceStatus::Cancelled;
         save_invoice(&env, &invoice);
@@ -122,7 +133,9 @@ impl InvoiceVeilContract {
 
     fn next_id(env: &Env) -> u64 {
         let current: u64 = env.storage().instance().get(&DataKey::NextId).unwrap_or(0);
-        env.storage().instance().set(&DataKey::NextId, &(current + 1));
+        env.storage()
+            .instance()
+            .set(&DataKey::NextId, &(current + 1));
         current
     }
 
