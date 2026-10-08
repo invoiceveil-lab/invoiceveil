@@ -31,3 +31,11 @@ jobs:
       - run: npm run type-check
       - run: npm test
       - run: npm run build
+
+  artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check proved-artifact size budget
+        run: |
+          node scripts/ci/artifact-budget.mjs | tee -a "$GITHUB_STEP_SUMMARY"
