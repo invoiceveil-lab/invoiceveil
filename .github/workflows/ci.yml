@@ -1,4 +1,4 @@
-name: Frontend CI
+name: CI
 
 on:
   push:
@@ -31,3 +31,19 @@ jobs:
       - run: npm run type-check
       - run: npm test
       - run: npm run build
+
+  prover:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prover
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # prover/ has no committed lockfile yet, so install (not ci) keeps the
+      # job self-contained. `test` runs the TypeScript suite through tsx.
+      - run: npm install --no-audit --no-fund
+      - run: npm run check
+      - run: npm test
