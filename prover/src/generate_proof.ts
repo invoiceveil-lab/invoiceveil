@@ -26,9 +26,14 @@ async function resolveProverArtifacts(): Promise<{ wasmPath: string; zkeyPath: s
     typeof window !== "undefined" || typeof process === "undefined" || typeof process.cwd !== "function";
 
   if (isBrowserRuntime) {
+    // Vite injects BASE_URL for the configured `base`, so the prover artifacts
+    // still resolve when the app is served from a sub-path.
+    const baseUrl = import.meta.env?.BASE_URL ?? "/";
+    const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+
     return {
-      wasmPath: "/wasm/invoice_range.wasm",
-      zkeyPath: "/wasm/invoice_range_final.zkey",
+      wasmPath: `${normalizedBase}wasm/invoice_range.wasm`,
+      zkeyPath: `${normalizedBase}wasm/invoice_range_final.zkey`,
     };
   }
 
