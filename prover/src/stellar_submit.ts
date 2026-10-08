@@ -370,7 +370,7 @@ async function signAndSendTransaction(
   address: string,
   callbacks: { onEvent?: (event: TxLifecycleEvent) => void },
 ) {
-  emit(callbacks, { type: "TxBroadcast", message: "Awaiting wallet signature..." });
+  emit(callbacks, { type: "AwaitingSignature", message: "Awaiting wallet signature..." });
 
   const signedTxXdr = await signer.signTransaction(assembled.toXDR(), {
     address,

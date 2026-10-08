@@ -39,7 +39,7 @@ export interface InvoiceRecord {
 }
 
 export interface TxLifecycleEvent {
-  type: "ProofSubmitting" | "TxBroadcast" | "TxConfirmed" | "TxFailed";
+  type: "ProofSubmitting" | "AwaitingSignature" | "TxBroadcast" | "TxConfirmed" | "TxFailed";
   message: string;
   hash?: string;
 }
