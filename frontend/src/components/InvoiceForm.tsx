@@ -6,13 +6,16 @@ interface InvoiceFormProps {
   onRegister: (payee: string, loBound: bigint, hiBound: bigint) => Promise<bigint>;
 }
 
+const USD_AMOUNT_PATTERN = /^\d+(?:\.\d{1,2})?$/;
+
 export function parseUsdToCents(value: string): bigint | null {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < 0) {
+  const match = USD_AMOUNT_PATTERN.exec(value);
+  if (!match) {
     return null;
   }
 
-  return BigInt(Math.round(parsed * 100));
+  const [whole, fraction = ""] = match[0].split(".");
+  return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
 }
 
 export function isValidStellarAddress(address: string): boolean {
