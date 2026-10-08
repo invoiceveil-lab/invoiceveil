@@ -120,10 +120,15 @@ impl InvoiceVeilContract {
             .publish((Symbol::new(&env, "InvoiceCancelled"),), (id,));
     }
 
+    /// Invoice IDs are 1-based: the first invoice registered is `#1`.
+    ///
+    /// The counter is incremented before it is returned so live contract IDs
+    /// match the demo/local fallback (`currentMax + 1n`) used by the frontend
+    /// and prover clients.
     fn next_id(env: &Env) -> u64 {
-        let current: u64 = env.storage().instance().get(&DataKey::NextId).unwrap_or(0);
-        env.storage().instance().set(&DataKey::NextId, &(current + 1));
-        current
+        let next: u64 = env.storage().instance().get(&DataKey::NextId).unwrap_or(0) + 1;
+        env.storage().instance().set(&DataKey::NextId, &next);
+        next
     }
 
     fn admin(env: &Env) -> Address {

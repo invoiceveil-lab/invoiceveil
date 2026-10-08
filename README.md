@@ -119,6 +119,10 @@ scripts/    Circuit setup, deployment, payload, and smoke-test scripts
 test/       Circuit, contract, and end-to-end test harnesses
 ```
 
+### Invoice IDs
+
+Invoice IDs are 1-based: the first invoice minted by `register_invoice` is `#1`, and the demo/local fallback assigns the same first ID. `next_id` in `contract/src/lib.rs` increments the stored counter before returning it.
+
 ## Run Locally
 
 ### Prerequisites
