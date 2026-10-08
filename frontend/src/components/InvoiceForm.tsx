@@ -6,7 +6,7 @@ interface InvoiceFormProps {
   onRegister: (payee: string, loBound: bigint, hiBound: bigint) => Promise<bigint>;
 }
 
-function parseUsdToCents(value: string): bigint | null {
+export function parseUsdToCents(value: string): bigint | null {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 0) {
     return null;
@@ -15,7 +15,7 @@ function parseUsdToCents(value: string): bigint | null {
   return BigInt(Math.round(parsed * 100));
 }
 
-function isValidStellarAddress(address: string): boolean {
+export function isValidStellarAddress(address: string): boolean {
   const trimmed = address.trim();
   return /^G[A-Z2-7]{55}$/.test(trimmed) || /^M[A-Z2-7]{68}$/.test(trimmed);
 }

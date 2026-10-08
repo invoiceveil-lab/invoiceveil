@@ -1,0 +1,33 @@
+name: Frontend CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+      # Keep npm peer resolution consistent with the generated lockfile.
+      - run: npm install --global npm@11.11.0 --ignore-scripts
+      # Frontend imports prover types, which resolve the root Stellar SDK.
+      - run: npm ci --ignore-scripts
+        working-directory: .
+      - run: npm ci --ignore-scripts
+      - run: npm run type-check
+      - run: npm test
+      - run: npm run build
