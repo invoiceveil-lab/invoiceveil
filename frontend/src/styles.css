@@ -1,18 +1,20 @@
 :root {
   color-scheme: dark;
   font-family: Inter, system-ui, sans-serif;
-  --bg: #08080f;
+  /* Palette seeds - single source of truth: brand.md (Quantum Veil). */
+  --bg: #08080F;
   --surface: #101119;
+  --primary: #A978EB;
+  --primary-soft: #C4A6F1;
+  --text: #F2F1F5;
+  /* Extended tokens and status colours - documented in brand.md. */
   --surface-strong: #151724;
   --surface-soft: rgba(169, 120, 235, 0.08);
-  --text: #f2f1f5;
-  --muted: #b7b4c7;
+  --muted: #B7B4C7;
   --line: rgba(196, 166, 241, 0.18);
-  --primary: #a978eb;
-  --primary-soft: #c4a6f1;
-  --success: #56d495;
-  --warning: #f0b95b;
-  --danger: #ff7b98;
+  --success: #56D495;
+  --warning: #F0B95B;
+  --danger: #FF7B98;
 }
 
 * {
