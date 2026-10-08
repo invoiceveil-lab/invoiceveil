@@ -561,8 +561,13 @@ export async function submitProofToStellar(
   return hash;
 }
 
-export async function verifyDisclosure(invoiceId: bigint, amount: bigint, salt: bigint): Promise<boolean> {
-  const invoice = await getInvoice(invoiceId).catch(() => null);
+export async function verifyDisclosure(
+  invoiceId: bigint,
+  amount: bigint,
+  salt: bigint,
+  config?: InvoiceLookupConfig,
+): Promise<boolean> {
+  const invoice = await getInvoice(invoiceId, config).catch(() => null);
   if (!invoice) {
     return false;
   }
