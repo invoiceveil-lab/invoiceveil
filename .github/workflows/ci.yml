@@ -28,6 +28,9 @@ jobs:
       - run: npm ci --ignore-scripts
         working-directory: .
       - run: npm ci --ignore-scripts
+      - name: Fail on stray console statements in shipped source
+        run: node scripts/ci/no-console.mjs
+        working-directory: .
       - run: npm run type-check
       - run: npm test
       - run: npm run build
