@@ -9,6 +9,22 @@ use soroban_sdk::{contract, contractimpl, Address, Env, Symbol};
 use types::{DataKey, Invoice, InvoiceStatus, Proof, PublicSignals, VerificationKey, VerifierInputs};
 use verifier::verify_groth16;
 
+// Storage TTL policy, expressed in ledgers. Stellar closes a ledger roughly
+// every 5 seconds, so a day is 24 * 60 * 60 / 5 = 17,280 ledgers.
+const DAY_IN_LEDGERS: u32 = 17_280;
+
+/// Bump a persistent entry's TTL only once it has dropped below ~30 days.
+pub(crate) const PERSISTENT_TTL_THRESHOLD: u32 = 30 * DAY_IN_LEDGERS;
+/// Extend persistent entries back out to ~60 days on every write.
+pub(crate) const PERSISTENT_TTL_EXTEND_TO: u32 = 60 * DAY_IN_LEDGERS;
+/// Bump the contract instance's TTL only once it has dropped below ~30 days.
+pub(crate) const INSTANCE_TTL_THRESHOLD: u32 = 30 * DAY_IN_LEDGERS;
+/// Extend the contract instance (which holds `Admin`, `VerificationKey` and
+/// `NextId`) back out to ~60 days on every instance write. Without this the
+/// verification key can archive and `verification_key` then panics, making
+/// settlement impossible.
+pub(crate) const INSTANCE_TTL_EXTEND_TO: u32 = 60 * DAY_IN_LEDGERS;
+
 #[contract]
 pub struct InvoiceVeilContract;
 
@@ -20,6 +36,9 @@ impl InvoiceVeilContract {
         env.storage()
             .instance()
             .set(&DataKey::VerificationKey, &verification_key);
+        env.storage()
+            .instance()
+            .extend_ttl(INSTANCE_TTL_THRESHOLD, INSTANCE_TTL_EXTEND_TO);
     }
 
     pub fn update_verification_key(env: Env, verification_key: VerificationKey) {
@@ -28,6 +47,9 @@ impl InvoiceVeilContract {
         env.storage()
             .instance()
             .set(&DataKey::VerificationKey, &verification_key);
+        env.storage()
+            .instance()
+            .extend_ttl(INSTANCE_TTL_THRESHOLD, INSTANCE_TTL_EXTEND_TO);
     }
 
     pub fn register_invoice(
@@ -123,6 +145,9 @@ impl InvoiceVeilContract {
     fn next_id(env: &Env) -> u64 {
         let current: u64 = env.storage().instance().get(&DataKey::NextId).unwrap_or(0);
         env.storage().instance().set(&DataKey::NextId, &(current + 1));
+        env.storage()
+            .instance()
+            .extend_ttl(INSTANCE_TTL_THRESHOLD, INSTANCE_TTL_EXTEND_TO);
         current
     }
 
@@ -144,12 +169,63 @@ impl InvoiceVeilContract {
 #[cfg(test)]
 mod tests {
     use super::invoice::empty_commitment;
-    use soroban_sdk::Env;
+    use super::*;
+    use soroban_sdk::crypto::bn254::{Bn254G1Affine, Bn254G2Affine};
+    use soroban_sdk::testutils::storage::{Instance as _, Persistent as _};
+    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::{vec, Env};
+
+    fn zero_vk(env: &Env, ic_len: u32) -> VerificationKey {
+        let mut ic = soroban_sdk::Vec::new(env);
+        for _ in 0..ic_len {
+            ic.push_back(Bn254G1Affine::from_array(env, &[0u8; 64]));
+        }
+        VerificationKey {
+            alpha: Bn254G1Affine::from_array(env, &[0u8; 64]),
+            beta: Bn254G2Affine::from_array(env, &[0u8; 128]),
+            gamma: Bn254G2Affine::from_array(env, &[0u8; 128]),
+            delta: Bn254G2Affine::from_array(env, &[0u8; 128]),
+            ic,
+        }
+    }
 
     #[test]
     fn empty_commitment_is_zeroed_bytes() {
         let env = Env::default();
         let empty = empty_commitment(&env);
         assert_eq!(empty.to_array(), [0u8; 32]);
+    }
+
+    #[test]
+    fn storage_writes_extend_ttl() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+
+        let admin = Address::generate(&env);
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+
+        // `configure` writes Admin/VerificationKey and `register_invoice` writes
+        // NextId plus the new invoice.
+        client.configure(&admin, &zero_vk(&env, 4));
+        let id = client.register_invoice(&payer, &payee, &100, &200);
+
+        env.as_contract(&contract_id, || {
+            assert_eq!(
+                env.storage().instance().get_ttl(),
+                INSTANCE_TTL_EXTEND_TO,
+                "instance TTL should be extended after a write"
+            );
+            assert_eq!(
+                env.storage()
+                    .persistent()
+                    .get_ttl(&DataKey::Invoice(id)),
+                PERSISTENT_TTL_EXTEND_TO,
+                "invoice TTL should be extended after a write"
+            );
+        });
     }
 }

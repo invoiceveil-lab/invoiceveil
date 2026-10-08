@@ -10,9 +10,16 @@ pub fn load_invoice(env: &Env, id: u64) -> Invoice {
 }
 
 pub fn save_invoice(env: &Env, invoice: &Invoice) {
-    env.storage()
-        .persistent()
-        .set(&DataKey::Invoice(invoice.id), invoice);
+    let key = DataKey::Invoice(invoice.id);
+    env.storage().persistent().set(&key, invoice);
+    // Persistent entries can expire; every write pushes the invoice's TTL back
+    // out so a settled invoice stays readable (and auditable) long after the
+    // settlement transaction lands.
+    env.storage().persistent().extend_ttl(
+        &key,
+        crate::PERSISTENT_TTL_THRESHOLD,
+        crate::PERSISTENT_TTL_EXTEND_TO,
+    );
 }
 
 pub fn empty_commitment(env: &Env) -> BytesN<32> {
