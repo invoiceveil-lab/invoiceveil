@@ -31,3 +31,10 @@ jobs:
       - run: npm run type-check
       - run: npm test
       - run: npm run build
+
+  docs-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check README commands against manifests
+        run: node scripts/ci/docs-drift.mjs
