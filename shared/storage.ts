@@ -1,6 +1,6 @@
-import type { InvoiceRecord } from "../types";
+import type { InvoiceRecord } from "./types.js";
 
-const STORAGE_KEY = "invoiceveil-demo-invoices";
+export const STORAGE_KEY = "invoiceveil-demo-invoices";
 const memoryStorage = new Map<string, string>();
 
 function replacer(_key: string, value: unknown) {

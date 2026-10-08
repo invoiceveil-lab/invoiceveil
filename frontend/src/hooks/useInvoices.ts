@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { readInvoices } from "../lib/storage";
+import { readInvoices } from "../../../shared/storage";
 import type { InvoiceRecord } from "../types";
 
 export function useInvoices() {

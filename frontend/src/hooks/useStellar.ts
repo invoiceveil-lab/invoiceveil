@@ -5,7 +5,7 @@ import { FREIGHTER_ID, FreighterModule } from "@creit.tech/stellar-wallets-kit/m
 import { Networks } from "@creit.tech/stellar-wallets-kit/types";
 
 import type { InvoiceRecord, InvoiceVeilMode, TxLifecycleEvent } from "../types";
-import { readInvoices, writeInvoices } from "../lib/storage";
+import { readInvoices, writeInvoices } from "../../../shared/storage";
 import {
   getInvoice as fetchInvoice,
   registerInvoice as registerOnChain,
