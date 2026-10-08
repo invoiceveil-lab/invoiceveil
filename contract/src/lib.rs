@@ -71,6 +71,10 @@ impl InvoiceVeilContract {
         let verification_key = Self::verification_key(&env);
         assert!(invoice.payer == payer, "payer mismatch");
         assert!(matches!(invoice.status, InvoiceStatus::Pending), "invoice not pending");
+        assert!(
+            signals.commitment != empty_commitment(&env),
+            "commitment cannot be zero"
+        );
         assert!(signals.lo_bound == invoice.lo_bound, "lo_bound mismatch");
         assert!(signals.hi_bound == invoice.hi_bound, "hi_bound mismatch");
         assert!(
