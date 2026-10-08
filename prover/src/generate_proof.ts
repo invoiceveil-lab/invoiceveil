@@ -33,13 +33,31 @@ async function resolveProverArtifacts(): Promise<{ wasmPath: string; zkeyPath: s
   }
 
   const path = await import("node:path");
+  const fs = await import("node:fs");
   const { fileURLToPath } = await import("node:url");
   const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-  return {
-    wasmPath: path.resolve(rootDir, "circuits", "build", "invoice_range_js", "invoice_range.wasm"),
-    zkeyPath: path.resolve(rootDir, "keys", "invoice_range_final.zkey"),
-  };
+  const buildWasmPath = path.resolve(rootDir, "circuits", "build", "invoice_range_js", "invoice_range.wasm");
+  const buildZkeyPath = path.resolve(rootDir, "keys", "invoice_range_final.zkey");
+  const committedWasmPath = path.resolve(rootDir, "frontend", "public", "wasm", "invoice_range.wasm");
+  const committedZkeyPath = path.resolve(rootDir, "frontend", "public", "wasm", "invoice_range_final.zkey");
+
+  // `circuits/build/` and `keys/*.zkey` are gitignored, so a fresh clone only
+  // ships the committed copies under frontend/public/wasm. Prefer the locally
+  // built artifacts when present and otherwise fall back to the committed ones
+  // so the Node e2e harness runs without a trusted setup.
+  const wasmPath = fs.existsSync(buildWasmPath) ? buildWasmPath : committedWasmPath;
+  const zkeyPath = fs.existsSync(buildZkeyPath) ? buildZkeyPath : committedZkeyPath;
+
+  if (!fs.existsSync(wasmPath) || !fs.existsSync(zkeyPath)) {
+    throw new Error(
+      "Missing prover artifacts. Expected circuits/build/invoice_range_js/invoice_range.wasm and " +
+        "keys/invoice_range_final.zkey, or the committed copies in frontend/public/wasm. " +
+        "Run scripts/01_compile_circuit.sh and scripts/02_trusted_setup.sh to build them.",
+    );
+  }
+
+  return { wasmPath, zkeyPath };
 }
 
 function randomSalt(): bigint {
