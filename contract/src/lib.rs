@@ -143,13 +143,96 @@ impl InvoiceVeilContract {
 
 #[cfg(test)]
 mod tests {
-    use super::invoice::empty_commitment;
-    use soroban_sdk::Env;
+    use super::*;
+    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::{vec, BytesN, Env};
+
+    use soroban_sdk::crypto::bn254::{Bn254G1Affine, Bn254G2Affine};
+
+    // alt_bn128 G1 generator (X = 1, Y = 2), big-endian uncompressed encoding.
+    const G1_GEN: [u8; 64] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2];
+    // alt_bn128 G2 generator, uncompressed be(c1) || be(c0) per Fp2 coordinate.
+    const G2_GEN: [u8; 128] = [25, 142, 147, 147, 146, 13, 72, 58, 114, 96, 191, 183, 49, 251, 93, 37, 241, 170, 73, 51, 53, 169, 231, 18, 151, 228, 133, 183, 174, 243, 18, 194, 24, 0, 222, 239, 18, 31, 30, 118, 66, 106, 0, 102, 94, 92, 68, 121, 103, 67, 34, 212, 247, 94, 218, 221, 70, 222, 189, 92, 217, 146, 246, 237, 9, 6, 137, 208, 88, 95, 240, 117, 236, 158, 153, 173, 105, 12, 51, 149, 188, 75, 49, 51, 112, 179, 142, 243, 85, 172, 218, 220, 209, 34, 151, 91, 18, 200, 94, 165, 219, 140, 109, 235, 74, 171, 113, 128, 141, 203, 64, 143, 227, 209, 231, 105, 12, 67, 211, 123, 76, 230, 204, 1, 102, 250, 125, 170];
+
+    fn g1(env: &Env, bytes: &[u8; 64]) -> Bn254G1Affine {
+        Bn254G1Affine::from_array(env, bytes)
+    }
+
+    fn g2(env: &Env, bytes: &[u8; 128]) -> Bn254G2Affine {
+        Bn254G2Affine::from_array(env, bytes)
+    }
+
+    fn infinity(env: &Env) -> Bn254G1Affine {
+        g1(env, &[0u8; 64])
+    }
+
+    // A self-consistent Groth16 fixture: the pairing product
+    // e(-A, B) * e(alpha, beta) * e(C, delta) collapses to one identity, so
+    // `verify_groth16` returns `Ok(true)` for a well-formed VK/proof pair.
+    fn fixture_vk(env: &Env) -> VerificationKey {
+        let g1_gen = g1(env, &G1_GEN);
+        let g2_gen = g2(env, &G2_GEN);
+        VerificationKey {
+            alpha: g1_gen.clone(),
+            beta: g2_gen.clone(),
+            gamma: g2_gen.clone(),
+            delta: g2_gen.clone(),
+            ic: vec![env, infinity(env)],
+        }
+    }
+
+    fn fixture_proof(env: &Env) -> Proof {
+        Proof {
+            a: g1(env, &G1_GEN),
+            b: g2(env, &G2_GEN),
+            c: infinity(env),
+        }
+    }
+
+    fn fixture_inputs(env: &Env) -> VerifierInputs {
+        VerifierInputs { inputs: vec![env] }
+    }
+
+    fn signals(env: &Env, lo_bound: u64, hi_bound: u64) -> PublicSignals {
+        PublicSignals {
+            commitment: BytesN::from_array(env, &[7u8; 32]),
+            lo_bound,
+            hi_bound,
+        }
+    }
 
     #[test]
     fn empty_commitment_is_zeroed_bytes() {
         let env = Env::default();
         let empty = empty_commitment(&env);
         assert_eq!(empty.to_array(), [0u8; 32]);
+    }
+
+    #[test]
+    fn end_to_end_register_settle_get() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+        let admin = Address::generate(&env);
+        client.configure(&admin, &fixture_vk(&env));
+
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+        let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
+        assert_eq!(id, 0);
+
+        let commitment = BytesN::from_array(&env, &[7u8; 32]);
+        client.settle_invoice(
+            &payer,
+            &id,
+            &fixture_proof(&env),
+            &signals(&env, 10_000, 50_000),
+            &fixture_inputs(&env),
+        );
+
+        let invoice = client.get_invoice(&id);
+        assert!(matches!(invoice.status, InvoiceStatus::Settled));
+        assert_eq!(invoice.commitment, commitment);
     }
 }
