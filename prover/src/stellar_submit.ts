@@ -474,6 +474,22 @@ export async function registerInvoice(
   return invoiceId;
 }
 
+export function settleInvoiceArgs(
+  payer: string,
+  invoiceId: bigint,
+  proof: SnarkProof,
+  signals: PublicSignals,
+  rawPublicSignals: string[],
+): StellarSdk.xdr.ScVal[] {
+  return [
+    StellarSdk.Address.fromString(payer).toScVal(),
+    StellarSdk.xdr.ScVal.scvU64(StellarSdk.xdr.Uint64.fromString(invoiceId.toString())),
+    proofToScVal(formatProofForContract(proof)),
+    signalsToScVal(formatSignalsForContract(signals)),
+    verifierInputsToScVal(formatVerifierInputs(rawPublicSignals)),
+  ];
+}
+
 export async function submitProofToStellar(
   invoiceId: bigint,
   proof: unknown,
@@ -481,9 +497,6 @@ export async function submitProofToStellar(
   rawPublicSignals: string[],
   config: SubmitConfig,
 ): Promise<string> {
-  const formattedProof = formatProofForContract(proof as SnarkProof);
-  const verifierInputs = formatVerifierInputs(rawPublicSignals);
-
   if (APP_MODE === "demo") {
     const txHash = `demo${crypto.randomUUID().replace(/-/g, "").slice(0, 48)}`;
     const updated =
@@ -526,11 +539,7 @@ export async function submitProofToStellar(
     .addOperation(
       contract.call(
         "settle_invoice",
-        StellarSdk.Address.fromString(config.payer).toScVal(),
-        StellarSdk.xdr.ScVal.scvU64(StellarSdk.xdr.Uint64.fromString(invoiceId.toString())),
-        proofToScVal(formattedProof),
-        signalsToScVal(formatSignalsForContract(signals)),
-        verifierInputsToScVal(verifierInputs),
+        ...settleInvoiceArgs(config.payer, invoiceId, proof as SnarkProof, signals, rawPublicSignals),
       ),
     )
     .setTimeout(30)
