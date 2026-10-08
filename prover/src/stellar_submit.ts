@@ -486,27 +486,17 @@ export async function submitProofToStellar(
 
   if (APP_MODE === "demo") {
     const txHash = `demo${crypto.randomUUID().replace(/-/g, "").slice(0, 48)}`;
-    const updated =
-      updateCachedInvoice(invoiceId, (invoice) => ({
-        ...invoice,
-        commitment: signals.commitment,
-        status: "Settled",
-        txHash,
-      })) ??
-      null;
+    const updated = updateCachedInvoice(invoiceId, (invoice) => ({
+      ...invoice,
+      commitment: signals.commitment,
+      status: "Settled",
+      txHash,
+    }));
 
     if (!updated) {
-      upsertInvoice({
-        id: invoiceId,
-        payer: config.payer,
-        payee: "",
-        loBound: BigInt(signals.lo_bound),
-        hiBound: BigInt(signals.hi_bound),
-        commitment: signals.commitment,
-        status: "Settled",
-        txHash,
-        createdAt: new Date().toISOString(),
-      });
+      // Never fabricate a record: a demo settlement can only transition an
+      // invoice that was actually registered in the local feed.
+      throw new Error(`Invoice ${invoiceId.toString()} is not registered in the local demo feed.`);
     }
 
     emit(config, { type: "TxBroadcast", message: "Demo settlement recorded locally.", hash: txHash });
