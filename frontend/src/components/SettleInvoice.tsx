@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { formatMoney } from "../lib/format";
+import { formatMoney, parseUsdToCents } from "../lib/format";
 import type { InvoiceRecord } from "../types";
 import { useProver } from "../hooks/useProver";
 
@@ -55,13 +55,12 @@ export function SettleInvoice({ invoiceLookup, onSettle, txMessage, txHash }: Se
       return;
     }
 
-    const parsed = Number(amount);
-    if (!Number.isFinite(parsed) || parsed < 0) {
+    const cents = parseUsdToCents(amount);
+    if (cents === null) {
       setError("Enter a valid private amount.");
       return;
     }
 
-    const cents = BigInt(Math.round(parsed * 100));
     if (cents < invoice.loBound || cents > invoice.hiBound) {
       setError(`Amount must stay between ${formatMoney(invoice.loBound)} and ${formatMoney(invoice.hiBound)}.`);
       return;

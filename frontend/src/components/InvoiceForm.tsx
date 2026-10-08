@@ -1,18 +1,11 @@
 import { FormEvent, useState } from "react";
 
-import { formatMoney } from "../lib/format";
+import { formatMoney, parseUsdToCents } from "../lib/format";
+
+export { parseUsdToCents };
 
 interface InvoiceFormProps {
   onRegister: (payee: string, loBound: bigint, hiBound: bigint) => Promise<bigint>;
-}
-
-export function parseUsdToCents(value: string): bigint | null {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    return null;
-  }
-
-  return BigInt(Math.round(parsed * 100));
 }
 
 export function isValidStellarAddress(address: string): boolean {
