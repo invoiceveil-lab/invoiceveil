@@ -64,3 +64,21 @@ jobs:
       run: 'node scripts/ci/artifact-budget.mjs | tee -a "$GITHUB_STEP_SUMMARY"
 
         '
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - run: npm install --global npm@11.11.0 --ignore-scripts
+    - name: npm ci (root)
+      run: npm ci --ignore-scripts
+    - name: npm ci (frontend)
+      run: npm ci --ignore-scripts --prefix frontend
+    - name: npm ci (prover)
+      run: npm ci --ignore-scripts --prefix prover
+    - uses: dtolnay/rust-toolchain@stable
+    - name: Cargo lockfile check
+      run: cargo metadata --locked --format-version 1 > /dev/null
+      working-directory: contract
