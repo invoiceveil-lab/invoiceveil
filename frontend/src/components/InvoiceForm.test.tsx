@@ -28,12 +28,15 @@ describe("isValidStellarAddress", () => {
 describe("parseUsdToCents", () => {
   it.each([
     ["100.00", 10000n], ["0", 0n], ["0.00", 0n], ["0.01", 1n],
-    ["123.45", 12345n], ["500", 50000n],
+    ["123.45", 12345n], ["500", 50000n], ["0.29", 29n],
   ])("parses %s into exactly %s cents", (value, cents) => {
     expect(parseUsdToCents(value)).toBe(cents);
   });
 
-  it.each(["-1", "-0.01", "abc", "100usd", "NaN", "Infinity", "-Infinity", "1e309"])(
+  it.each([
+    "-1", "-0.01", "abc", "100usd", "NaN", "Infinity", "-Infinity", "1e309",
+    "", "1e2", "0x64", "  7  ",
+  ])(
     "rejects invalid USD input %s", (value) => {
       expect(parseUsdToCents(value)).toBeNull();
     },
