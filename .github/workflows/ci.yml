@@ -82,3 +82,9 @@ jobs:
     - name: Cargo lockfile check
       run: cargo metadata --locked --format-version 1 > /dev/null
       working-directory: contract
+  env-consistency:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check .env.example against code
+      run: node scripts/ci/env-consistency.mjs
