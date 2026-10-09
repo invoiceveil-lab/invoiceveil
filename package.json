@@ -5,7 +5,7 @@
   "scripts": {
     "test": "npm run test:e2e",
     "test:e2e": "tsx test/e2e.test.ts",
-    "test:circuit": "tsx test/poseidon_commit.test.ts",
+    "test:circuit": "tsx test/range_check.test.ts",
     "lint": "eslint frontend/src prover/src test shared",
     "format": "prettier --write \"frontend/src/**/*.{ts,tsx}\" \"prover/src/**/*.ts\" \"test/**/*.ts\" \"shared/**/*.ts\"",
     "format:check": "prettier --check \"frontend/src/**/*.{ts,tsx}\" \"prover/src/**/*.ts\" \"test/**/*.ts\" \"shared/**/*.ts\""
