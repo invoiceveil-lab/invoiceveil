@@ -350,24 +350,41 @@ async function signAndSendTransaction(
 ) {
   emit(callbacks, { type: "AwaitingSignature", message: "Awaiting wallet signature..." });
 
-  const signedTxXdr = await signer.signTransaction(assembled.toXDR(), {
-    address,
-    networkPassphrase: NETWORK_PASSPHRASE,
-  });
-  const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE) as StellarSdk.Transaction;
-  const sendResult = await server.sendTransaction(signedTx);
+  let txHash: string | undefined;
 
-  if (sendResult.status !== "PENDING" && sendResult.status !== "DUPLICATE") {
-    throw new Error(`Soroban submit failed: ${JSON.stringify(sendResult)}`);
+  try {
+    const signedTxXdr = await signer.signTransaction(assembled.toXDR(), {
+      address,
+      networkPassphrase: NETWORK_PASSPHRASE,
+    });
+    const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE) as StellarSdk.Transaction;
+    const sendResult = await server.sendTransaction(signedTx);
+
+    txHash = sendResult.hash ?? signedTx.hash().toString("hex");
+
+    if (sendResult.status !== "PENDING" && sendResult.status !== "DUPLICATE") {
+      throw new Error(`Soroban submit failed: ${JSON.stringify(sendResult)}`);
+    }
+
+    emit(callbacks, { type: "TxBroadcast", message: "Transaction broadcast to Stellar testnet.", hash: txHash });
+
+    const receipt = await waitForTransaction(server, txHash);
+    emit(callbacks, { type: "TxConfirmed", message: "Transaction confirmed on Stellar testnet.", hash: txHash });
+
+    return { hash: txHash, receipt };
+  } catch (error) {
+    // Surface the failure as the defined TxFailed lifecycle event so the UI
+    // stops showing the last progress/awaiting-signature message.
+    const message = simplifyErrorMessage(error);
+    const failure: TxLifecycleEvent = { type: "TxFailed", message };
+
+    if (txHash) {
+      failure.hash = txHash;
+    }
+
+    emit(callbacks, failure);
+    throw error;
   }
-
-  const txHash = sendResult.hash ?? signedTx.hash().toString("hex");
-  emit(callbacks, { type: "TxBroadcast", message: "Transaction broadcast to Stellar testnet.", hash: txHash });
-
-  const receipt = await waitForTransaction(server, txHash);
-  emit(callbacks, { type: "TxConfirmed", message: "Transaction confirmed on Stellar testnet.", hash: txHash });
-
-  return { hash: txHash, receipt };
 }
 
 function requireViewer(viewer?: string): string {

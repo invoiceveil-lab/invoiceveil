@@ -18,6 +18,12 @@ interface SettleInvoiceProps {
 }
 
 export function SettleInvoice({ invoiceLookup, onSettle, txEvent }: SettleInvoiceProps) {
+  txMessage?: string;
+  txHash?: string;
+  txError?: string;
+}
+
+export function SettleInvoice({ invoiceLookup, onSettle, txMessage, txHash, txError }: SettleInvoiceProps) {
   const [invoiceId, setInvoiceId] = useState("1");
   const [amount, setAmount] = useState("250.00");
   const [error, setError] = useState<string | null>(null);
@@ -153,6 +159,7 @@ export function SettleInvoice({ invoiceLookup, onSettle, txEvent }: SettleInvoic
 
         {error ? <p className="inline-error">{error}</p> : null}
         {proofError ? <p className="inline-error">{proofError}</p> : null}
+        {txError ? <p className="inline-error">{txError}</p> : null}
         {success ? <p className="inline-success">{success}</p> : null}
 
         <button type="submit" className="primary-button">
