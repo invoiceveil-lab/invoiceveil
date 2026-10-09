@@ -291,6 +291,14 @@ export function useStellar() {
 
       const invoices = readInvoices();
       const txHash = createDemoTxHash();
+      const existing = invoices.find((invoice) => invoice.id === invoiceId);
+      if (!existing) {
+        // Never fabricate a settlement: the demo fallback can only update an
+        // invoice that already exists in the local feed.
+        throw error instanceof Error ? error : new Error("Invoice is not registered in the local demo feed.");
+      }
+
+      const txHash = fakeHash("demo");
       const updated = invoices.map((invoice) =>
         invoice.id === invoiceId
           ? {
