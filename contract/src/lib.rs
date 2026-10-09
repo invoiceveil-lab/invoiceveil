@@ -381,6 +381,8 @@ mod tests {
     use soroban_sdk::testutils::Address as _;
     use soroban_sdk::{Address, Env};
     use soroban_sdk::Env;
+        }
+    }
 
     #[test]
     fn empty_commitment_is_zeroed_bytes() {
@@ -392,6 +394,7 @@ mod tests {
     #[test]
     fn end_to_end_register_settle_get() {
     fn next_id_is_zero_based_and_advances() {
+    fn cancel_invoice_marks_invoice_cancelled() {
         let env = Env::default();
         env.mock_all_auths();
         let contract_id = env.register(InvoiceVeilContract, ());
@@ -479,6 +482,19 @@ mod tests {
     #[test]
     #[should_panic(expected = "verification key not configured")]
     fn settle_invoice_without_verification_key_panics() {
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+        let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
+
+        client.cancel_invoice(&payer, &id);
+
+        let invoice = client.get_invoice(&id);
+        assert!(matches!(invoice.status, InvoiceStatus::Cancelled));
+    }
+
+    #[test]
+    #[should_panic(expected = "payer mismatch")]
+    fn cancel_invoice_rejects_non_payer() {
         let env = Env::default();
         env.mock_all_auths();
         let contract_id = env.register(InvoiceVeilContract, ());
@@ -567,6 +583,40 @@ mod tests {
             ],
         };
 
+
+        let impostor = Address::generate(&env);
+        client.cancel_invoice(&impostor, &id);
+    }
+
+    #[test]
+    #[should_panic(expected = "invoice not pending")]
+    fn cancel_invoice_rejects_already_cancelled_invoice() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+        let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
+
+        client.cancel_invoice(&payer, &id);
+        client.cancel_invoice(&payer, &id);
+    }
+
+    #[test]
+    #[should_panic(expected = "invoice not pending")]
+    fn settle_invoice_rejects_cancelled_invoice() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+        let admin = Address::generate(&env);
+        client.configure(&admin, &fixture_vk(&env));
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+        let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
+
+        client.cancel_invoice(&payer, &id);
         client.settle_invoice(
             &payer,
             &id,
