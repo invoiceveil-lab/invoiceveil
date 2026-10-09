@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { buildPoseidon } from "circomlibjs";
 import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit/sdk";
 import { FREIGHTER_ID, FreighterModule } from "@creit.tech/stellar-wallets-kit/modules/freighter";
 import { Networks } from "@creit.tech/stellar-wallets-kit/types";
@@ -44,6 +43,7 @@ async function ensureWalletKit() {
 }
 
 async function recomputeCommitment(amount: bigint, salt: bigint): Promise<string> {
+  const { buildPoseidon } = await import("circomlibjs");
   const poseidon = await buildPoseidon();
   return poseidon.F.toString(poseidon([amount, salt]));
 }

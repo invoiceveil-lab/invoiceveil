@@ -1,5 +1,4 @@
 import * as StellarSdk from "@stellar/stellar-sdk";
-import { buildPoseidon } from "circomlibjs";
 
 import type { InvoiceRecord, InvoiceStatus, InvoiceVeilMode, PublicSignals, TxLifecycleEvent } from "../../shared/types.js";
 import { fieldElemToBytes32, g1PointToBytes64, g2PointToBytes128 } from "./converters.js";
@@ -574,6 +573,7 @@ export async function verifyDisclosure(invoiceId: bigint, amount: bigint, salt: 
     return false;
   }
 
+  const { buildPoseidon } = await import("circomlibjs");
   const poseidon = await buildPoseidon();
   const commitment = poseidon.F.toString(poseidon([amount, salt]));
   return commitment === invoice.commitment;
