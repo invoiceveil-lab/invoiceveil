@@ -383,6 +383,8 @@ mod tests {
     use soroban_sdk::Env;
         }
     }
+    use soroban_sdk::testutils::{Address as _, Events};
+    use soroban_sdk::{vec, IntoVal, Symbol, Val, Vec};
 
     #[test]
     fn empty_commitment_is_zeroed_bytes() {
@@ -395,6 +397,7 @@ mod tests {
     fn end_to_end_register_settle_get() {
     fn next_id_is_zero_based_and_advances() {
     fn cancel_invoice_marks_invoice_cancelled() {
+    fn register_invoice_stores_pending_invoice_and_emits_event() {
         let env = Env::default();
         env.mock_all_auths();
         let contract_id = env.register(InvoiceVeilContract, ());
@@ -640,6 +643,40 @@ mod tests {
     #[test]
     #[should_panic(expected = "invoice not pending")]
     fn cancel_invoice_rejects_already_cancelled_invoice() {
+        // Read the emitted event before any later invocation, because
+        // `env.events().all()` only returns events from the last call.
+        let topics: Vec<Val> = (Symbol::new(&env, "InvoiceRegistered"),).into_val(&env);
+        let data: Val = (id, 10_000u64, 50_000u64).into_val(&env);
+        assert_eq!(
+            env.events().all(),
+            vec![&env, (contract_id.clone(), topics, data)]
+        );
+
+        let invoice = client.get_invoice(&id);
+        assert_eq!(invoice.id, 0);
+        assert_eq!(invoice.payer, payer);
+        assert_eq!(invoice.payee, payee);
+        assert_eq!(invoice.lo_bound, 10_000);
+        assert_eq!(invoice.hi_bound, 50_000);
+        assert_eq!(invoice.commitment, empty_commitment(&env));
+        assert!(matches!(invoice.status, InvoiceStatus::Pending));
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid bounds")]
+    fn register_invoice_rejects_equal_bounds() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+        client.register_invoice(&payer, &payee, &1_000u64, &1_000u64);
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid bounds")]
+    fn register_invoice_rejects_inverted_bounds() {
         let env = Env::default();
         env.mock_all_auths();
         let contract_id = env.register(InvoiceVeilContract, ());
@@ -771,5 +808,8 @@ mod tests {
             hi_bound: 50_000,
         };
         client.settle_invoice(&payer, &id, &fixture_proof(&env), &zero, &fixture_inputs(&env));
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+        client.register_invoice(&payer, &payee, &5_000u64, &1_000u64);
     }
 }
