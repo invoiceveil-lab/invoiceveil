@@ -94,3 +94,9 @@ jobs:
     - uses: actions/checkout@v4
     - name: Check committed verification key
       run: node scripts/ci/vk-consistency.mjs
+  docs-drift:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check README commands against manifests
+      run: node scripts/ci/docs-drift.mjs
