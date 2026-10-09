@@ -217,6 +217,10 @@ impl InvoiceVeilContract {
     /// The counter is incremented before it is returned so live contract IDs
     /// match the demo/local fallback (`currentMax + 1n`) used by the frontend
     /// and prover clients.
+    /// Returns the next invoice id and advances the stored counter.
+    ///
+    /// Ids are intentionally 0-based: the very first `register_invoice` call
+    /// returns `0`, and each later call returns the previous counter value.
     fn next_id(env: &Env) -> u64 {
         let next: u64 = env.storage().instance().get(&DataKey::NextId).unwrap_or(0) + 1;
         env.storage().instance().set(&DataKey::NextId, &next);
@@ -376,6 +380,7 @@ mod tests {
     use super::{InvoiceVeilContract, InvoiceVeilContractClient};
     use soroban_sdk::testutils::Address as _;
     use soroban_sdk::{Address, Env};
+    use soroban_sdk::Env;
 
     #[test]
     fn empty_commitment_is_zeroed_bytes() {
@@ -386,6 +391,7 @@ mod tests {
 
     #[test]
     fn end_to_end_register_settle_get() {
+    fn next_id_is_zero_based_and_advances() {
         let env = Env::default();
         env.mock_all_auths();
         let contract_id = env.register(InvoiceVeilContract, ());
@@ -613,5 +619,19 @@ mod tests {
         let payer = Address::generate(&env);
 
         client.register_invoice(&payer, &payer, &100, &500);
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+
+        let first = client.register_invoice(&payer, &payee, &1u64, &2u64);
+        let second = client.register_invoice(&payer, &payee, &1u64, &2u64);
+        assert_eq!(first, 0);
+        assert_eq!(second, 1);
+        assert_eq!(client.get_invoice(&first).id, 0);
+        assert_eq!(client.get_invoice(&second).id, 1);
+
+        let next: u64 = env.as_contract(&contract_id, || {
+            env.storage().instance().get(&DataKey::NextId).unwrap()
+        });
+        assert_eq!(next, 2);
     }
 }
