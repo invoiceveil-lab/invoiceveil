@@ -44,14 +44,21 @@ export function AuditorView({ onVerify, defaultInvoiceId }: AuditorViewProps) {
           <p className="eyebrow">Audit</p>
           <h2>Selective disclosure</h2>
         </div>
-        <p className="panel-copy">A view key is the amount plus salt used to recompute the original Poseidon commitment.</p>
+        <p className="panel-copy">
+          A view key is the amount plus salt used to recompute the original Poseidon commitment.
+        </p>
       </div>
 
       <form className="form-grid" onSubmit={handleSubmit}>
         <div className="field-row">
           <label className="field">
             <span>Invoice ID</span>
-            <input type="text" inputMode="numeric" value={invoiceId} onChange={(event) => setInvoiceId(event.target.value)} />
+            <input
+              type="text"
+              inputMode="numeric"
+              value={invoiceId}
+              onChange={(event) => setInvoiceId(event.target.value)}
+            />
           </label>
 
           <label className="field">

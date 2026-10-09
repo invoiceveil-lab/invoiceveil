@@ -5,7 +5,10 @@
   "scripts": {
     "test": "npm run test:e2e",
     "test:e2e": "tsx test/e2e.test.ts",
-    "test:circuit": "tsx test/circuit.test.ts"
+    "test:circuit": "tsx test/circuit.test.ts",
+    "lint": "eslint frontend/src prover/src test shared",
+    "format": "prettier --write \"frontend/src/**/*.{ts,tsx}\" \"prover/src/**/*.ts\" \"test/**/*.ts\" \"shared/**/*.ts\"",
+    "format:check": "prettier --check \"frontend/src/**/*.{ts,tsx}\" \"prover/src/**/*.ts\" \"test/**/*.ts\" \"shared/**/*.ts\""
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^16.0.1",
@@ -16,6 +19,10 @@
   "devDependencies": {
     "@types/node": "^26.1.0",
     "tsx": "^4.20.3",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "prettier": "^3.9.9",
+    "typescript-eslint": "^8.71.1"
   }
 }

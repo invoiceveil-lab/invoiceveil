@@ -23,7 +23,11 @@ export function WalletConnect({
     <section className="wallet-status-panel" aria-label="Wallet status">
       <div className="wallet-status-copy">
         <p className="eyebrow">Wallet session</p>
-        <h3>{isConnected ? "Connected and ready for testnet settlement." : "Connect a Stellar wallet to enter the dashboard."}</h3>
+        <h3>
+          {isConnected
+            ? "Connected and ready for testnet settlement."
+            : "Connect a Stellar wallet to enter the dashboard."}
+        </h3>
         <p className="header-copy">
           Live mode signs real Soroban testnet transactions. Disconnecting sends the session back to the landing page.
         </p>

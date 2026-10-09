@@ -94,6 +94,29 @@ export function InvoiceList({ invoices, loading, onRefresh }: InvoiceListProps) 
                 </tr>
               );
             })}
+            {invoices.map((invoice) => (
+              <tr key={invoice.id.toString()}>
+                <td className="mono">#{invoice.id.toString()}</td>
+                <td className="mono">{truncateMiddle(invoice.payee, 6, 6)}</td>
+                <td>
+                  {formatMoney(invoice.loBound)} - {formatMoney(invoice.hiBound)}
+                </td>
+                <td>
+                  <span className={`status-pill ${statusTone(invoice.status)}`}>{invoice.status}</span>
+                </td>
+                <td className="zk-locked">ZK Protected</td>
+                <td className="mono">{truncateMiddle(invoice.commitment, 10, 8)}</td>
+                <td>
+                  {invoice.txHash ? (
+                    <a href={explorerUrl(invoice.txHash)} target="_blank" rel="noreferrer">
+                      {truncateMiddle(invoice.txHash, 8, 6)}
+                    </a>
+                  ) : (
+                    <span className="muted-text">Pending</span>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

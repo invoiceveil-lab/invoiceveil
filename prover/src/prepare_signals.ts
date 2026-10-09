@@ -12,11 +12,7 @@ export interface CircuitInput {
   commitment: string;
 }
 
-export function toCircuitInput(
-  input: InvoiceInput,
-  salt: bigint,
-  commitment: string,
-): CircuitInput {
+export function toCircuitInput(input: InvoiceInput, salt: bigint, commitment: string): CircuitInput {
   return {
     amount: input.amount.toString(),
     salt: salt.toString(),
