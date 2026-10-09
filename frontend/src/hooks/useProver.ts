@@ -47,6 +47,8 @@ export function useProver() {
           // as proof failures: ignore them instead of assuming an error.
           return;
       }
+      setStatus("error");
+      setError(typeof message.payload?.message === "string" ? message.payload.message : "Unknown prover worker message.");
     };
 
     workerRef.current = worker;
