@@ -316,7 +316,7 @@ export function useStellar() {
 
   const verifyDisclosure = async (invoiceId: bigint, amount: bigint, salt: bigint): Promise<boolean> => {
     try {
-      return await verifyOnChain(invoiceId, amount, salt);
+      return await verifyOnChain(invoiceId, amount, salt, { viewer: address || undefined });
     } catch {
       const invoice = await getInvoice(invoiceId);
       if (!invoice) {
