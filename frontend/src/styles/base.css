@@ -1,0 +1,65 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, sans-serif;
+  --bg: #08080f;
+  --surface: #101119;
+  --surface-strong: #151724;
+  --surface-soft: rgba(169, 120, 235, 0.08);
+  --text: #f2f1f5;
+  --muted: #b7b4c7;
+  --line: rgba(196, 166, 241, 0.18);
+  --primary: #a978eb;
+  --primary-soft: #c4a6f1;
+  --success: #56d495;
+  --warning: #f0b95b;
+  --danger: #ff7b98;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(169, 120, 235, 0.18), transparent 28%),
+    radial-gradient(circle at 85% 15%, rgba(196, 166, 241, 0.12), transparent 24%),
+    linear-gradient(180deg, #0b0b12 0%, #07070c 100%);
+  color: var(--text);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--primary-soft);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+.sidebar-link:focus-visible,
+.sidebar-disconnect:focus-visible,
+.flow-row:focus-visible {
+  outline: 2px solid var(--primary-soft);
+  outline-offset: 2px;
+}
+
+.app-shell {
+  padding: 24px;
+}
+
+.boot-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 1.05rem;
+}

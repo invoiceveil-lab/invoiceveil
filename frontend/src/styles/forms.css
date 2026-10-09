@@ -1,0 +1,270 @@
+.summary-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.mode-banner {
+  max-width: 1200px;
+  margin: 16px auto 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(240, 185, 91, 0.25);
+  border-radius: 16px;
+  background: rgba(240, 185, 91, 0.08);
+  color: #ffe8ba;
+}
+
+.mode-banner-live {
+  border-color: rgba(86, 212, 149, 0.25);
+  background: rgba(86, 212, 149, 0.08);
+  color: #d6f8e5;
+}
+
+.metric-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: var(--surface-soft);
+}
+
+.tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.tab-button.active {
+  background: rgba(169, 120, 235, 0.18);
+  border-color: rgba(169, 120, 235, 0.4);
+}
+
+.panel {
+  display: grid;
+  gap: 20px;
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: start;
+}
+
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field span {
+  font-weight: 600;
+}
+
+.field input {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  padding: 12px 14px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.inline-error,
+.inline-success {
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+
+.inline-error {
+  background: rgba(255, 123, 152, 0.1);
+  color: #ffc3d0;
+}
+
+.inline-success {
+  background: rgba(86, 212, 149, 0.12);
+  color: #bff0d5;
+}
+
+.subtle-card,
+.steps-card,
+.receipt-card {
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.receipt-card {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.receipt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.receipt-value {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.steps-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.step {
+  color: var(--muted);
+}
+
+.step.done {
+  color: var(--text);
+}
+
+.progress-strip {
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.table-shell {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.zk-locked {
+  color: var(--primary-soft);
+  font-weight: 700;
+}
+
+.status-pending {
+  color: #ffe1a6;
+  background: rgba(240, 185, 91, 0.12);
+}
+
+.status-settled {
+  color: #c7f1da;
+  background: rgba(86, 212, 149, 0.12);
+}
+
+.status-cancelled {
+  color: #ffc3d0;
+  background: rgba(255, 123, 152, 0.12);
+}
+
+.mode-demo {
+  color: #ffe1a6;
+  background: rgba(240, 185, 91, 0.12);
+}
+
+.mode-live {
+  color: #c7f1da;
+  background: rgba(86, 212, 149, 0.12);
+}
+
+.skeleton-list {
+  display: grid;
+  gap: 12px;
+}
+
+.skeleton-row {
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(196, 166, 241, 0.08), rgba(255, 255, 255, 0.03));
+}
+
+.empty-state {
+  justify-items: start;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 14px;
+  }
+
+  .landing-shell,
+  .dashboard-shell {
+    padding: 14px;
+  }
+
+  .landing-nav,
+  .dashboard-topbar,
+  .header-shell,
+  .panel-heading,
+  .summary-grid,
+  .field-row,
+  .wallet-card,
+  .receipt-grid {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .landing-hero,
+  .landing-strip,
+  .landing-stage,
+  .landing-architecture-item,
+  .dashboard-hero,
+  .wallet-status-panel,
+  .dashboard-overview-row,
+  .dashboard-note {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-links {
+    display: none;
+  }
+
+  .landing-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wallet-cluster {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .progress-strip {
+    flex-direction: column;
+    align-items: start;
+  }
+}
