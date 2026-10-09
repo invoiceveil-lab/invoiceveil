@@ -8,6 +8,7 @@ use invoice::{empty_commitment, load_invoice, save_invoice};
 use soroban_sdk::{contract, contractimpl, crypto::bn254::Fr, Address, Env, Symbol, U256};
 use types::{DataKey, Invoice, InvoiceStatus, Proof, PublicSignals, VerificationKey, VerifierInputs};
 use soroban_sdk::{contract, contractimpl, Address, Env, Symbol};
+use soroban_sdk::{contract, contractevent, contractimpl, Address, BytesN, Env};
 use types::{
     DataKey, Invoice, InvoiceStatus, Proof, PublicSignals, VerificationKey, VerifierInputs,
 };
@@ -28,6 +29,29 @@ pub(crate) const INSTANCE_TTL_THRESHOLD: u32 = 30 * DAY_IN_LEDGERS;
 /// verification key can archive and `verification_key` then panics, making
 /// settlement impossible.
 pub(crate) const INSTANCE_TTL_EXTEND_TO: u32 = 60 * DAY_IN_LEDGERS;
+/// Emitted when a payer registers a new invoice with public bounds.
+#[contractevent(topics = ["InvoiceRegistered"], data_format = "vec")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct InvoiceRegistered {
+    pub id: u64,
+    pub lo_bound: u64,
+    pub hi_bound: u64,
+}
+
+/// Emitted when an invoice is settled with a valid Groth16 proof.
+#[contractevent(topics = ["InvoiceSettled"], data_format = "vec")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct InvoiceSettled {
+    pub id: u64,
+    pub commitment: BytesN<32>,
+}
+
+/// Emitted when a pending invoice is cancelled by its payer.
+#[contractevent(topics = ["InvoiceCancelled"], data_format = "vec")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct InvoiceCancelled {
+    pub id: u64,
+}
 
 #[contract]
 pub struct InvoiceVeilContract;
@@ -85,6 +109,12 @@ impl InvoiceVeilContract {
             (Symbol::new(&env, "InvoiceRegistered"),),
             (id, lo_bound, hi_bound),
         );
+        InvoiceRegistered {
+            id,
+            lo_bound,
+            hi_bound,
+        }
+        .publish(&env);
         id
     }
 
@@ -149,6 +179,11 @@ impl InvoiceVeilContract {
             (Symbol::new(&env, "InvoiceSettled"),),
             (id, invoice.commitment),
         );
+        InvoiceSettled {
+            id,
+            commitment: invoice.commitment,
+        }
+        .publish(&env);
     }
 
     // NOTE: the always-false `verify_disclosure` stub was removed. Selective
@@ -174,8 +209,7 @@ impl InvoiceVeilContract {
         invoice.status = InvoiceStatus::Cancelled;
         save_invoice(&env, &invoice);
 
-        env.events()
-            .publish((Symbol::new(&env, "InvoiceCancelled"),), (id,));
+        InvoiceCancelled { id }.publish(&env);
     }
 
     /// Invoice IDs are 1-based: the first invoice registered is `#1`.
