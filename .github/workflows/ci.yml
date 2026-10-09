@@ -88,3 +88,9 @@ jobs:
     - uses: actions/checkout@v4
     - name: Check .env.example against code
       run: node scripts/ci/env-consistency.mjs
+  vk-consistency:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check committed verification key
+      run: node scripts/ci/vk-consistency.mjs
