@@ -47,7 +47,7 @@ function randomSalt(): bigint {
   return BigInt(`0x${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`);
 }
 
-export async function generateInvoiceProof(input: InvoiceInput): Promise<InvoiceProof> {
+export function validateInvoiceInput(input: InvoiceInput): void {
   if (input.loBound > input.hiBound) {
     throw new Error("Lower bound cannot be greater than upper bound.");
   }
@@ -55,6 +55,10 @@ export async function generateInvoiceProof(input: InvoiceInput): Promise<Invoice
   if (input.amount < input.loBound || input.amount > input.hiBound) {
     throw new Error("Invoice amount is outside the agreed contract bounds.");
   }
+}
+
+export async function generateInvoiceProof(input: InvoiceInput): Promise<InvoiceProof> {
+  validateInvoiceInput(input);
 
   const salt = randomSalt();
   const poseidon = await buildPoseidon();
