@@ -24,6 +24,8 @@ function currentViewer(): string | undefined {
 
   return window.localStorage.getItem(WALLET_STORAGE_KEY) ?? undefined;
 }
+import { readInvoices } from "../../../shared/storage";
+import type { InvoiceRecord } from "../types";
 
 export function useInvoices() {
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);

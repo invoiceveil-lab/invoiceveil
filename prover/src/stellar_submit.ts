@@ -2,6 +2,7 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 
 import type { InvoiceRecord, InvoiceStatus, InvoiceVeilMode, PublicSignals, TxLifecycleEvent } from "../../shared/types.js";
 import { createDemoTxHash } from "../../shared/demo.js";
+import { readInvoices, writeInvoices } from "../../shared/storage.js";
 import { fieldElemToBytes32, g1PointToBytes64, g2PointToBytes128 } from "./converters.js";
 
 const CONTRACT_ID =
@@ -10,8 +11,6 @@ const RPC_URL = import.meta.env?.VITE_RPC_URL ?? "https://soroban-testnet.stella
 const NETWORK_PASSPHRASE =
   import.meta.env?.VITE_NETWORK_PASSPHRASE ?? "Test SDF Network ; September 2015";
 const APP_MODE = (import.meta.env?.VITE_INVOICEVEIL_MODE ?? (typeof window === "undefined" ? "demo" : "live")) as InvoiceVeilMode;
-const STORAGE_KEY = "invoiceveil-demo-invoices";
-const memoryStorage = new Map<string, string>();
 const ZERO_COMMITMENT = "0x" + "0".repeat(64);
 
 type SnarkProof = {
@@ -36,18 +35,6 @@ export interface SubmitConfig extends WalletSigner {
 
 export interface InvoiceLookupConfig {
   viewer?: string;
-}
-
-function replacer(_key: string, value: unknown) {
-  return typeof value === "bigint" ? `${value.toString()}n` : value;
-}
-
-function reviver(_key: string, value: unknown) {
-  if (typeof value === "string" && value.endsWith("n") && /^-?\d+n$/.test(value)) {
-    return BigInt(value.slice(0, -1));
-  }
-
-  return value;
 }
 
 function emit(callbacks: { onEvent?: (event: TxLifecycleEvent) => void }, event: TxLifecycleEvent) {
@@ -131,34 +118,6 @@ function bigintFromUnknown(value: unknown): bigint {
   }
 
   throw new Error("Unable to decode bigint value from Soroban response.");
-}
-
-function readInvoices(): InvoiceRecord[] {
-  const raw =
-    typeof window === "undefined"
-      ? memoryStorage.get(STORAGE_KEY) ?? null
-      : window.localStorage.getItem(STORAGE_KEY);
-
-  if (!raw) {
-    return [];
-  }
-
-  try {
-    return JSON.parse(raw, reviver) as InvoiceRecord[];
-  } catch {
-    return [];
-  }
-}
-
-function writeInvoices(invoices: InvoiceRecord[]) {
-  const serialized = JSON.stringify(invoices, replacer);
-
-  if (typeof window === "undefined") {
-    memoryStorage.set(STORAGE_KEY, serialized);
-    return;
-  }
-
-  window.localStorage.setItem(STORAGE_KEY, serialized);
 }
 
 function upsertInvoice(invoice: InvoiceRecord) {
