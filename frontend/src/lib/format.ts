@@ -100,3 +100,18 @@ export function explorerUrl(hash: string): string | null {
 
   return `https://stellar.expert/explorer/testnet/tx/${hash}`;
 }
+
+/** First invoice ID minted by the contract (1-based: `next_id` increments then returns). */
+export const FIRST_INVOICE_ID = 1n;
+
+/**
+ * Default invoice ID for the settle and audit forms: the lowest ID currently
+ * in the feed, falling back to the contract's first ID on an empty feed.
+ */
+export function defaultInvoiceId(invoices: InvoiceRecord[]): string {
+  const first = invoices.reduce<bigint | null>(
+    (min, invoice) => (min === null || invoice.id < min ? invoice.id : min),
+    null,
+  );
+  return (first ?? FIRST_INVOICE_ID).toString();
+}

@@ -2,10 +2,11 @@ import { FormEvent, useState } from "react";
 
 interface AuditorViewProps {
   onVerify: (invoiceId: bigint, amount: bigint, salt: bigint) => Promise<boolean>;
+  defaultInvoiceId: string;
 }
 
-export function AuditorView({ onVerify }: AuditorViewProps) {
-  const [invoiceId, setInvoiceId] = useState("1");
+export function AuditorView({ onVerify, defaultInvoiceId }: AuditorViewProps) {
+  const [invoiceId, setInvoiceId] = useState(defaultInvoiceId);
   const [amount, setAmount] = useState("250.00");
   const [salt, setSalt] = useState("");
   const [message, setMessage] = useState<string | null>(null);
