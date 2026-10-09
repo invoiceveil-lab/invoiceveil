@@ -31,6 +31,13 @@ jobs:
     - run: npm run type-check
     - run: npm test
     - run: npm run build
+    - name: Lint TypeScript sources
+      run: npm run lint
+      working-directory: .
+    - name: Check formatting
+      run: npx prettier --check "frontend/src/**/*.{ts,tsx}" "prover/src/**/*.ts"
+        "test/**/*.ts" "shared/**/*.ts"
+      working-directory: .
   prover:
     runs-on: ubuntu-latest
     defaults:

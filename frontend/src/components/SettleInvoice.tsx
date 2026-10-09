@@ -122,7 +122,9 @@ export function SettleInvoice({ invoiceLookup, onSettle, txMessage, txHash, defa
           <p className="eyebrow">Settle invoice</p>
           <h2>Generate the ZK proof in-browser</h2>
         </div>
-        <p className="panel-copy">The exact amount never leaves your machine. The chain sees the proof, the bounds, and the commitment hash.</p>
+        <p className="panel-copy">
+          The exact amount never leaves your machine. The chain sees the proof, the bounds, and the commitment hash.
+        </p>
       </div>
 
       <form className="form-grid" onSubmit={handleSubmit}>
@@ -154,7 +156,9 @@ export function SettleInvoice({ invoiceLookup, onSettle, txMessage, txHash, defa
         {invoice ? (
           <div className="subtle-card">
             <p className="mono">Invoice #{invoice.id.toString()}</p>
-            <p>Allowed range: {formatMoney(invoice.loBound)} to {formatMoney(invoice.hiBound)}</p>
+            <p>
+              Allowed range: {formatMoney(invoice.loBound)} to {formatMoney(invoice.hiBound)}
+            </p>
           </div>
         ) : (
           <div className="subtle-card">

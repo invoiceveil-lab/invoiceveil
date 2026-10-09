@@ -76,7 +76,9 @@ export function InvoiceForm({ onRegister }: InvoiceFormProps) {
           <p className="eyebrow">Create invoice</p>
           <h2>Register a settlement range</h2>
         </div>
-        <p className="panel-copy">The contract stores only the payee and public bounds. The negotiated amount stays private.</p>
+        <p className="panel-copy">
+          The contract stores only the payee and public bounds. The negotiated amount stays private.
+        </p>
       </div>
 
       <form className="form-grid" onSubmit={handleSubmit}>

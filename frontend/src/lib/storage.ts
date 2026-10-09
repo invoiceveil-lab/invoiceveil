@@ -17,9 +17,7 @@ function reviver(_key: string, value: unknown) {
 
 export function readInvoices(): InvoiceRecord[] {
   const raw =
-    typeof window === "undefined"
-      ? memoryStorage.get(STORAGE_KEY) ?? null
-      : window.localStorage.getItem(STORAGE_KEY);
+    typeof window === "undefined" ? (memoryStorage.get(STORAGE_KEY) ?? null) : window.localStorage.getItem(STORAGE_KEY);
   if (!raw) {
     return [];
   }

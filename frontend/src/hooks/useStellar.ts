@@ -278,11 +278,17 @@ export function useStellar() {
     }
 
     try {
-      const txHash = await submitProofToStellar(invoiceId, payload.proof, payload.publicSignals, payload.rawPublicSignals, {
-        payer: address || DEFAULT_PAYER,
-        signTransaction,
-        onEvent: setLastEvent,
-      });
+      const txHash = await submitProofToStellar(
+        invoiceId,
+        payload.proof,
+        payload.publicSignals,
+        payload.rawPublicSignals,
+        {
+          payer: address || DEFAULT_PAYER,
+          signTransaction,
+          onEvent: setLastEvent,
+        },
+      );
       return txHash;
     } catch (error) {
       if (mode === "live") {

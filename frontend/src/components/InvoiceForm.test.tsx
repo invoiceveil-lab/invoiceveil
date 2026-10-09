@@ -15,11 +15,19 @@ describe("isValidStellarAddress", () => {
   });
 
   it.each([
-    "", `G${"A".repeat(54)}`, `G${"A".repeat(56)}`,
-    `M${"A".repeat(67)}`, `M${"A".repeat(69)}`,
-    account.toLowerCase(), `G${"A".repeat(54)}0`, `G${"A".repeat(54)}1`,
-    `G${"A".repeat(54)}8`, `G${"A".repeat(54)}9`,
-    `M${"2".repeat(67)}!`, `S${"A".repeat(55)}`, `G${"A".repeat(27)} ${"A".repeat(27)}`,
+    "",
+    `G${"A".repeat(54)}`,
+    `G${"A".repeat(56)}`,
+    `M${"A".repeat(67)}`,
+    `M${"A".repeat(69)}`,
+    account.toLowerCase(),
+    `G${"A".repeat(54)}0`,
+    `G${"A".repeat(54)}1`,
+    `G${"A".repeat(54)}8`,
+    `G${"A".repeat(54)}9`,
+    `M${"2".repeat(67)}!`,
+    `S${"A".repeat(55)}`,
+    `G${"A".repeat(27)} ${"A".repeat(27)}`,
   ])("rejects unsupported address format %s", (value) => {
     expect(isValidStellarAddress(value)).toBe(false);
   });
@@ -29,6 +37,12 @@ describe("parseUsdToCents", () => {
   it.each([
     ["100.00", 10000n], ["0", 0n], ["0.00", 0n], ["0.01", 1n],
     ["123.45", 12345n], ["500", 50000n], ["0.29", 29n],
+    ["100.00", 10000n],
+    ["0", 0n],
+    ["0.00", 0n],
+    ["0.01", 1n],
+    ["123.45", 12345n],
+    ["500", 50000n],
   ])("parses %s into exactly %s cents", (value, cents) => {
     expect(parseUsdToCents(value)).toBe(cents);
   });
@@ -38,6 +52,9 @@ describe("parseUsdToCents", () => {
     "", "1e2", "0x64", "  7  ",
   ])(
     "rejects invalid USD input %s", (value) => {
+  it.each(["-1", "-0.01", "abc", "100usd", "NaN", "Infinity", "-Infinity", "1e309"])(
+    "rejects invalid USD input %s",
+    (value) => {
       expect(parseUsdToCents(value)).toBeNull();
     },
   );
@@ -57,8 +74,9 @@ describe("InvoiceForm submission", () => {
     fillForm(` ${payee} `, "0", "100.00");
 
     expect(onRegister).toHaveBeenCalledExactlyOnceWith(payee, 0n, 10000n);
-    expect((await screen.findByText("Invoice #42 registered for $0.00 to $100.00.")).textContent)
-      .toBe("Invoice #42 registered for $0.00 to $100.00.");
+    expect((await screen.findByText("Invoice #42 registered for $0.00 to $100.00.")).textContent).toBe(
+      "Invoice #42 registered for $0.00 to $100.00.",
+    );
     expect((screen.getByRole("textbox", { name: /Payee Stellar address/ }) as HTMLInputElement).value).toBe("");
     expect((screen.getByRole("button", { name: "Register invoice" }) as HTMLButtonElement).disabled).toBe(false);
   });
@@ -81,7 +99,9 @@ describe("InvoiceForm submission", () => {
 
   it("disables submission while pending and restores it after failure, then permits retry", async () => {
     let rejectRegistration!: (reason: Error) => void;
-    const pending = new Promise<bigint>((_, reject) => { rejectRegistration = reject; });
+    const pending = new Promise<bigint>((_, reject) => {
+      rejectRegistration = reject;
+    });
     const onRegister = vi.fn().mockReturnValueOnce(pending).mockResolvedValueOnce(7n);
     render(<InvoiceForm onRegister={onRegister} />);
     fillForm(account);
@@ -91,7 +111,9 @@ describe("InvoiceForm submission", () => {
     fireEvent.click(pendingButton);
     expect(onRegister).toHaveBeenCalledTimes(1);
 
-    await act(async () => { rejectRegistration(new Error("Registration failed")); });
+    await act(async () => {
+      rejectRegistration(new Error("Registration failed"));
+    });
     expect(screen.getByText("Registration failed").textContent).toBe("Registration failed");
     expect((screen.getByRole("button", { name: "Register invoice" }) as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(screen.getByRole("button", { name: "Register invoice" }));
