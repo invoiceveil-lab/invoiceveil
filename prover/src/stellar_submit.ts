@@ -1,6 +1,7 @@
 import * as StellarSdk from "@stellar/stellar-sdk";
 
 import type { InvoiceRecord, InvoiceStatus, InvoiceVeilMode, PublicSignals, TxLifecycleEvent } from "../../shared/types.js";
+import { createDemoTxHash } from "../../shared/demo.js";
 import { fieldElemToBytes32, g1PointToBytes64, g2PointToBytes128 } from "./converters.js";
 
 const CONTRACT_ID =
@@ -491,7 +492,7 @@ export async function submitProofToStellar(
   const verifierInputs = formatVerifierInputs(rawPublicSignals);
 
   if (APP_MODE === "demo") {
-    const txHash = `demo${crypto.randomUUID().replace(/-/g, "").slice(0, 48)}`;
+    const txHash = createDemoTxHash();
     const updated =
       updateCachedInvoice(invoiceId, (invoice) => ({
         ...invoice,

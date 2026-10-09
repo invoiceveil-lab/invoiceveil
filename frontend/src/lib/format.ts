@@ -1,4 +1,5 @@
 import type { InvoiceRecord } from "../types";
+import { isDemoTxHash } from "../../../shared/demo";
 
 export function formatMoney(cents: bigint): string {
   return new Intl.NumberFormat("en-US", {
@@ -28,6 +29,12 @@ export function statusTone(status: InvoiceRecord["status"]): string {
   }
 }
 
-export function explorerUrl(hash: string): string {
+// Demo settlements reuse a `demo`-prefixed placeholder (see shared/demo.ts).
+// Returning null keeps those hashes out of the Stellar explorer.
+export function explorerUrl(hash: string): string | null {
+  if (isDemoTxHash(hash)) {
+    return null;
+  }
+
   return `https://stellar.expert/explorer/testnet/tx/${hash}`;
 }
