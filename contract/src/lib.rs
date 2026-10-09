@@ -146,6 +146,8 @@ mod tests {
     use super::*;
     use soroban_sdk::testutils::Address as _;
     use soroban_sdk::{vec, BytesN, Env};
+    use soroban_sdk::testutils::{Address as _, MockAuth, MockAuthInvoke};
+    use soroban_sdk::{vec, BytesN, Env, IntoVal};
 
     use soroban_sdk::crypto::bn254::{Bn254G1Affine, Bn254G2Affine};
 
@@ -223,6 +225,88 @@ mod tests {
         assert_eq!(id, 0);
 
         let commitment = BytesN::from_array(&env, &[7u8; 32]);
+    fn updated_vk(env: &Env) -> VerificationKey {
+        let mut vk = fixture_vk(env);
+        vk.ic = vec![env, infinity(env), g1(env, &G1_GEN)];
+        vk
+    }
+
+    #[test]
+    fn admin_can_update_verification_key() {
+        let env = Env::default();
+        let admin = Address::generate(&env);
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+
+        env.mock_all_auths();
+        client.configure(&admin, &fixture_vk(&env));
+
+        let updated = updated_vk(&env);
+        env.mock_auths(&[MockAuth {
+            address: &admin,
+            invoke: &MockAuthInvoke {
+                contract: &contract_id,
+                fn_name: "update_verification_key",
+                args: (updated.clone(),).into_val(&env),
+                sub_invokes: &[],
+            },
+        }]);
+        client.update_verification_key(&updated);
+
+        let stored: VerificationKey = env.as_contract(&contract_id, || {
+            env.storage()
+                .instance()
+                .get(&DataKey::VerificationKey)
+                .unwrap()
+        });
+        assert_eq!(stored, updated);
+    }
+
+    #[test]
+    #[should_panic(expected = "Auth")]
+    fn non_admin_cannot_update_verification_key() {
+        let env = Env::default();
+        let admin = Address::generate(&env);
+        let attacker = Address::generate(&env);
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+
+        env.mock_all_auths();
+        client.configure(&admin, &fixture_vk(&env));
+
+        let updated = updated_vk(&env);
+        env.mock_auths(&[MockAuth {
+            address: &attacker,
+            invoke: &MockAuthInvoke {
+                contract: &contract_id,
+                fn_name: "update_verification_key",
+                args: (updated.clone(),).into_val(&env),
+                sub_invokes: &[],
+            },
+        }]);
+        client.update_verification_key(&updated);
+    }
+
+    #[test]
+    #[should_panic(expected = "admin not configured")]
+    fn update_verification_key_before_configure_panics() {
+        let env = Env::default();
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+        client.update_verification_key(&fixture_vk(&env));
+    }
+
+    #[test]
+    #[should_panic(expected = "verification key not configured")]
+    fn settle_invoice_without_verification_key_panics() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(&env, &contract_id);
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+        let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
+
         client.settle_invoice(
             &payer,
             &id,
