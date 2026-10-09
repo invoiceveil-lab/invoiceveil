@@ -45,22 +45,49 @@ async function recomputeCommitment(amount: bigint, salt: bigint): Promise<string
   return poseidon.F.toString(poseidon([amount, salt]));
 }
 
+const HORIZON_TIMEOUT_MS = 8000;
+
+/** Distinct balance state for an unavailable Horizon account, not a real balance. */
+export const UNAVAILABLE_BALANCE = "— XLM";
+
+/**
+ * Formats a Horizon native balance with exact string math so large balances are
+ * not silently rounded through Number(). Truncates (does not round) to 2 dp.
+ */
+export function formatXlmBalance(native: string): string {
+  const match = /^(\d+)(?:\.(\d+))?$/.exec(native.trim());
+  if (!match) {
+    return native;
+  }
+
+  const [, whole, fraction = ""] = match;
+  return `${whole}.${fraction.padEnd(2, "0").slice(0, 2)}`;
+}
+
 async function fetchWalletBalance(address: string): Promise<string> {
-  const response = await fetch(`${HORIZON_URL}/accounts/${address}`);
-  if (!response.ok) {
-    return "Wallet connected";
-  }
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(() => controller.abort(), HORIZON_TIMEOUT_MS);
 
-  const account = (await response.json()) as {
-    balances?: Array<{ asset_type?: string; balance?: string }>;
-  };
-  const native = account.balances?.find((balance) => balance.asset_type === "native")?.balance;
-  if (!native) {
-    return "0 XLM";
-  }
+  try {
+    const response = await fetch(`${HORIZON_URL}/accounts/${address}`, { signal: controller.signal });
+    if (!response.ok) {
+      return UNAVAILABLE_BALANCE;
+    }
 
-  const rounded = Number(native);
-  return Number.isFinite(rounded) ? `${rounded.toFixed(2)} XLM` : `${native} XLM`;
+    const account = (await response.json()) as {
+      balances?: Array<{ asset_type?: string; balance?: string }>;
+    };
+    const native = account.balances?.find((balance) => balance.asset_type === "native")?.balance;
+    if (!native) {
+      return "0 XLM";
+    }
+
+    return `${formatXlmBalance(native)} XLM`;
+  } catch {
+    return UNAVAILABLE_BALANCE;
+  } finally {
+    globalThis.clearTimeout(timeout);
+  }
 }
 
 export function useStellar() {
@@ -135,7 +162,7 @@ export function useStellar() {
 
     void fetchWalletBalance(address)
       .then(setBalance)
-      .catch(() => setBalance("Wallet connected"));
+      .catch(() => setBalance(UNAVAILABLE_BALANCE));
   }, [address, mode]);
 
   const signTransaction = async (xdr: string, context: { address: string; networkPassphrase: string }) => {
