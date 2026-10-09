@@ -501,6 +501,7 @@ export async function submitProofToStellar(
       // Never fabricate a record: a demo settlement can only transition an
       // invoice that was actually registered in the local feed.
       throw new Error(`Invoice ${invoiceId.toString()} is not registered in the local demo feed.`);
+      throw new Error("Enter an invoice ID that exists in the feed first.");
     }
 
     emit(config, { type: "TxBroadcast", message: "Demo settlement recorded locally.", hash: txHash });

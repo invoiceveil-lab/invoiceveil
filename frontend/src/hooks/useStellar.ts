@@ -296,6 +296,8 @@ export function useStellar() {
         // Never fabricate a settlement: the demo fallback can only update an
         // invoice that already exists in the local feed.
         throw error instanceof Error ? error : new Error("Invoice is not registered in the local demo feed.");
+      if (!invoices.some((invoice) => invoice.id === invoiceId)) {
+        throw new Error("Enter an invoice ID that exists in the feed first.");
       }
 
       const txHash = fakeHash("demo");
