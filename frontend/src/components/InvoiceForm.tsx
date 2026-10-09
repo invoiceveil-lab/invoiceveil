@@ -1,6 +1,8 @@
 import { FormEvent, useState } from "react";
 
-import { formatMoney } from "../lib/format";
+import { formatMoney, parseUsdToCents } from "../lib/format";
+
+export { parseUsdToCents };
 
 interface InvoiceFormProps {
   onRegister: (payee: string, loBound: bigint, hiBound: bigint) => Promise<bigint>;
