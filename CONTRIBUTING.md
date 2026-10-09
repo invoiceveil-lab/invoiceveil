@@ -32,3 +32,15 @@ Open an issue with steps to reproduce, the expected result and the actual result
 ## Questions
 
 Ask on the issue thread so the discussion stays alongside the task.
+
+## Required checks
+
+Branch protection on the default branch requires the following before a pull request can merge:
+
+- the **`ci-summary`** status check must be green (the `.github/workflows/ci.yml` job that
+  aggregates the required jobs), and
+- at least one approving review from a **code owner**.
+
+Code-owner review is mandatory for changes under `contract/`, `circuits/`, `prover/` and
+`.github/`; the owners are listed in `.github/CODEOWNERS`. Maintainers configure these rules in
+the repository's branch-protection settings (Settings -> Branches -> protection rule for `main`).
