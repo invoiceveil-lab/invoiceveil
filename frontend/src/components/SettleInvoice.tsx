@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { formatMoney } from "../lib/format";
-import type { InvoiceRecord } from "../types";
+import type { InvoiceRecord, TxLifecycleEvent } from "../types";
 import { useProver } from "../hooks/useProver";
 
 interface SettleInvoiceProps {
@@ -14,11 +14,10 @@ interface SettleInvoiceProps {
       rawPublicSignals: string[];
     },
   ) => Promise<string>;
-  txMessage?: string;
-  txHash?: string;
+  txEvent?: TxLifecycleEvent | null;
 }
 
-export function SettleInvoice({ invoiceLookup, onSettle, txMessage, txHash }: SettleInvoiceProps) {
+export function SettleInvoice({ invoiceLookup, onSettle, txEvent }: SettleInvoiceProps) {
   const [invoiceId, setInvoiceId] = useState("1");
   const [amount, setAmount] = useState("250.00");
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +25,11 @@ export function SettleInvoice({ invoiceLookup, onSettle, txMessage, txHash }: Se
   const [elapsed, setElapsed] = useState(0);
   const submittedProofKeyRef = useRef<string | null>(null);
   const { prove, status, proof, progress, error: proofError, reset } = useProver();
+  const signatureRequested =
+    txEvent?.type === "AwaitingSignature" ||
+    txEvent?.type === "TxBroadcast" ||
+    txEvent?.type === "TxConfirmed";
+  const broadcast = txEvent?.type === "TxBroadcast" || txEvent?.type === "TxConfirmed";
 
   const invoice = useMemo(() => {
     try {
@@ -162,8 +166,8 @@ export function SettleInvoice({ invoiceLookup, onSettle, txMessage, txHash }: Se
           <li className={progress?.step && progress.step >= 2 ? "step done" : "step"}>Step 2: Compute commitment</li>
           <li className={progress?.step && progress.step >= 3 ? "step done" : "step"}>Step 3: Generate ZK proof</li>
           <li className={proof ? "step done" : "step"}>Step 4: Proof ready</li>
-          <li className={txMessage ? "step done" : "step"}>Step 5: Await wallet signature</li>
-          <li className={txHash ? "step done" : "step"}>Step 6: Broadcast transaction</li>
+          <li className={signatureRequested ? "step done" : "step"}>Step 5: Await wallet signature</li>
+          <li className={broadcast ? "step done" : "step"}>Step 6: Broadcast transaction</li>
           <li className={success ? "step done" : "step"}>Step 7: Invoice settled</li>
         </ol>
 

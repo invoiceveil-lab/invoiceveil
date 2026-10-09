@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { AuditorView } from "./AuditorView";
 import { InvoiceForm } from "./InvoiceForm";
@@ -94,7 +94,6 @@ function formatVolume(invoices: InvoiceRecord[]): string {
 export function DashboardPage({ stellar, onDisconnectToLanding }: DashboardPageProps) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const { invoices, loading, refresh, getById } = useInvoices();
-  const txHash = useMemo(() => stellar.lastEvent?.hash, [stellar.lastEvent]);
   const pendingCount = invoices.filter((invoice) => invoice.status === "Pending").length;
   const settledCount = invoices.filter((invoice) => invoice.status === "Settled").length;
   const currentPage = pageCopy[activeTab];
@@ -166,7 +165,7 @@ export function DashboardPage({ stellar, onDisconnectToLanding }: DashboardPageP
             </section>
           ) : null}
           {activeTab === "create" ? <InvoiceForm onRegister={stellar.registerInvoice} /> : null}
-          {activeTab === "settle" ? <SettleInvoice invoiceLookup={getById} onSettle={stellar.settleInvoice} txMessage={stellar.lastEvent?.message} txHash={txHash} /> : null}
+          {activeTab === "settle" ? <SettleInvoice invoiceLookup={getById} onSettle={stellar.settleInvoice} txEvent={stellar.lastEvent} /> : null}
           {activeTab === "feed" ? <InvoiceList invoices={invoices} loading={loading} onRefresh={refresh} /> : null}
           {activeTab === "audit" ? <AuditorView onVerify={stellar.verifyDisclosure} /> : null}
         </main>
