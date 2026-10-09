@@ -87,7 +87,7 @@ function commitmentBytesToDecimal(value: unknown): string {
   return ZERO_COMMITMENT;
 }
 
-function coerceStatus(value: unknown): InvoiceStatus {
+export function coerceStatus(value: unknown): InvoiceStatus {
   if (typeof value === "string") {
     if (value === "Pending" || value === "Settled" || value === "Cancelled") {
       return value;
@@ -319,7 +319,7 @@ function decodeTransactionValue(response: unknown): unknown {
   return decodeScVal(candidate);
 }
 
-function mapInvoiceRecord(value: unknown): InvoiceRecord | null {
+export function mapInvoiceRecord(value: unknown): InvoiceRecord | null {
   if (!value || typeof value !== "object") {
     return null;
   }
