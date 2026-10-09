@@ -24,22 +24,29 @@ export function useProver() {
     worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
       const message = event.data;
 
-      if (message.type === "PROOF_PROGRESS") {
-        setStatus("computing");
-        setProgress(message.payload);
-        return;
-      }
+      switch (message?.type) {
+        case "PROOF_PROGRESS":
+          setStatus("computing");
+          setProgress(message.payload);
+          return;
 
-      if (message.type === "PROOF_READY") {
-        setStatus("ready");
-        setProof(message.payload);
-        setError(null);
-        setProgress({ step: 4, message: "Proof ready." });
-        return;
-      }
+        case "PROOF_READY":
+          setStatus("ready");
+          setProof(message.payload);
+          setError(null);
+          setProgress({ step: 4, message: "Proof ready." });
+          return;
 
-      setStatus("error");
-      setError(message.payload.message);
+        case "PROOF_ERROR":
+          setStatus("error");
+          setError(message.payload?.message ?? "Proof generation failed.");
+          return;
+
+        default:
+          // Unknown or forward-compatible worker messages must not be treated
+          // as proof failures: ignore them instead of assuming an error.
+          return;
+      }
     };
 
     workerRef.current = worker;
