@@ -256,26 +256,38 @@ function verifierInputsToScVal(verifierInputs: ReturnType<typeof formatVerifierI
   ]);
 }
 
-function decodeScVal(value: unknown): unknown {
-  if (!value) {
-    return null;
-  }
+const BASE64_PATTERN = /^[A-Za-z0-9+/]+={0,2}$/;
 
-  if (
-    typeof value === "number" ||
-    typeof value === "bigint" ||
-    typeof value === "boolean" ||
-    (typeof value === "string" && !/^[A-Za-z0-9+/=]+$/.test(value))
-  ) {
+/**
+ * Soroban RPC returns contract values as base64-encoded XDR strings, but the
+ * same field can also hold a plain string (a symbol, a status word, an address
+ * fragment). Treat a string as XDR only when it is a padded base64 payload and
+ * still decodes to a valid `ScVal`; otherwise return it untouched so plain
+ * strings are never corrupted or made to throw.
+ */
+function decodeScValString(value: string): unknown {
+  if (value.length === 0 || value.length % 4 !== 0 || !BASE64_PATTERN.test(value)) {
     return value;
   }
 
+  try {
+    return StellarSdk.scValToNative(StellarSdk.xdr.ScVal.fromXDR(value, "base64"));
+  } catch {
+    return value;
+  }
+}
+
+function decodeScVal(value: unknown): unknown {
+  if (value == null) {
+    return null;
+  }
+
   if (typeof value === "string") {
-    try {
-      return StellarSdk.scValToNative(StellarSdk.xdr.ScVal.fromXDR(value, "base64"));
-    } catch {
-      return value;
-    }
+    return decodeScValString(value);
+  }
+
+  if (typeof value === "number" || typeof value === "bigint" || typeof value === "boolean") {
+    return value;
   }
 
   try {
