@@ -1,12 +1,9 @@
 name: CI
-
 on:
-  push:
-  pull_request:
-
+  push: null
+  pull_request: null
 permissions:
   contents: read
-
 jobs:
   frontend:
     runs-on: ubuntu-latest
@@ -14,39 +11,36 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            frontend/package-lock.json
-      # Keep npm peer resolution consistent with the generated lockfile.
-      - run: npm install --global npm@11.11.0 --ignore-scripts
-      # Frontend imports prover types, which resolve the root Stellar SDK.
-      - run: npm ci --ignore-scripts
-        working-directory: .
-      - run: npm ci --ignore-scripts
-      - name: Fail on stray console statements in shipped source
-        run: node scripts/ci/no-console.mjs
-        working-directory: .
-      - run: npm run type-check
-      - run: npm test
-      - run: npm run build
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: npm
+        cache-dependency-path: 'package-lock.json
 
+          frontend/package-lock.json
+
+          '
+    - run: npm install --global npm@11.11.0 --ignore-scripts
+    - run: npm ci --ignore-scripts
+      working-directory: .
+    - run: npm ci --ignore-scripts
+    - name: Fail on stray console statements in shipped source
+      run: node scripts/ci/no-console.mjs
+      working-directory: .
+    - run: npm run type-check
+    - run: npm test
+    - run: npm run build
   prover:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: prover
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      # prover/ has no committed lockfile yet, so install (not ci) keeps the
-      # job self-contained. `test` runs the TypeScript suite through tsx.
-      - run: npm install --no-audit --no-fund
-      - run: npm run check
-      - run: npm test
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - run: npm install --no-audit --no-fund
+    - run: npm run check
+    - run: npm test
