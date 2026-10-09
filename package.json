@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "test": "npm run test:e2e",
-    "test:e2e": "tsx test/e2e.test.ts"
+    "test:e2e": "tsx test/e2e.test.ts",
+    "test:circuit": "tsx test/circuit.test.ts"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^16.0.1",
