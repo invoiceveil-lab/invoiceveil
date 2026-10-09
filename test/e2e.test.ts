@@ -14,7 +14,7 @@ async function runE2E() {
   const payee = "GCFX7C4T74DUMMYINVOICEVEILWALLETDEMOADDRESSXXXX";
   const payer = "GDEMOINVOICEVEILPAYER000000000000000000000000000000000";
   const id = await registerInvoice(payee, 10000n, 50000n, { payer });
-  assert(id >= 1n, "Invoice ID should be present");
+  assert(id === 1n, "The first invoice ID should be 1");
   console.log("✓ Invoice registered, ID:", id.toString());
 
   const proofResult = await generateInvoiceProof({ amount: 25000n, loBound: 10000n, hiBound: 50000n });
