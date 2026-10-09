@@ -1208,3 +1208,8 @@ th {
   .contract-strip { align-items: flex-start; }
   .dashboard-workspace .panel-heading { gap: 8px; }
 }
+@import "./styles/base.css";
+@import "./styles/landing.css";
+@import "./styles/dashboard.css";
+@import "./styles/forms.css";
+@import "./styles/workspace.css";
