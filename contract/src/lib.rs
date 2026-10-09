@@ -482,6 +482,19 @@ mod tests {
     #[test]
     #[should_panic(expected = "verification key not configured")]
     fn settle_invoice_without_verification_key_panics() {
+    fn configured_client<'a>(env: &'a Env) -> (Address, InvoiceVeilContractClient<'a>) {
+        env.mock_all_auths();
+        let contract_id = env.register(InvoiceVeilContract, ());
+        let client = InvoiceVeilContractClient::new(env, &contract_id);
+        let admin = Address::generate(env);
+        client.configure(&admin, &fixture_vk(env));
+        (contract_id, client)
+    }
+
+    #[test]
+    fn settle_invoice_marks_settled_and_stores_commitment() {
+        let env = Env::default();
+        let (_contract_id, client) = configured_client(&env);
         let payer = Address::generate(&env);
         let payee = Address::generate(&env);
         let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
@@ -534,6 +547,42 @@ mod tests {
         assert!(
             result.is_err(),
             "a proof over a different commitment must not settle the invoice"
+        let commitment = BytesN::from_array(&env, &[7u8; 32]);
+        client.settle_invoice(
+            &payer,
+            &id,
+            &fixture_proof(&env),
+            &signals(&env, 10_000, 50_000),
+            &fixture_inputs(&env),
+        );
+
+        let invoice = client.get_invoice(&id);
+        assert!(matches!(invoice.status, InvoiceStatus::Settled));
+        assert_eq!(invoice.commitment, commitment);
+    }
+
+    #[test]
+    #[should_panic(expected = "invoice not pending")]
+    fn settle_invoice_rejects_already_settled_invoice() {
+        let env = Env::default();
+        let (_contract_id, client) = configured_client(&env);
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+        let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
+
+        client.settle_invoice(
+            &payer,
+            &id,
+            &fixture_proof(&env),
+            &signals(&env, 10_000, 50_000),
+            &fixture_inputs(&env),
+        );
+        client.settle_invoice(
+            &payer,
+            &id,
+            &fixture_proof(&env),
+            &signals(&env, 10_000, 50_000),
+            &fixture_inputs(&env),
         );
     }
 
@@ -595,6 +644,10 @@ mod tests {
         env.mock_all_auths();
         let contract_id = env.register(InvoiceVeilContract, ());
         let client = InvoiceVeilContractClient::new(&env, &contract_id);
+    #[should_panic(expected = "payer mismatch")]
+    fn settle_invoice_rejects_wrong_payer() {
+        let env = Env::default();
+        let (_contract_id, client) = configured_client(&env);
         let payer = Address::generate(&env);
         let payee = Address::generate(&env);
         let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
@@ -612,6 +665,21 @@ mod tests {
         let client = InvoiceVeilContractClient::new(&env, &contract_id);
         let admin = Address::generate(&env);
         client.configure(&admin, &fixture_vk(&env));
+        let impostor = Address::generate(&env);
+        client.settle_invoice(
+            &impostor,
+            &id,
+            &fixture_proof(&env),
+            &signals(&env, 10_000, 50_000),
+            &fixture_inputs(&env),
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "lo_bound mismatch")]
+    fn settle_invoice_rejects_lo_bound_mismatch() {
+        let env = Env::default();
+        let (_contract_id, client) = configured_client(&env);
         let payer = Address::generate(&env);
         let payee = Address::generate(&env);
         let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
@@ -683,5 +751,25 @@ mod tests {
             env.storage().instance().get(&DataKey::NextId).unwrap()
         });
         assert_eq!(next, 2);
+            &signals(&env, 20_000, 50_000),
+            &fixture_inputs(&env),
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "commitment cannot be zero")]
+    fn settle_invoice_rejects_zero_commitment() {
+        let env = Env::default();
+        let (_contract_id, client) = configured_client(&env);
+        let payer = Address::generate(&env);
+        let payee = Address::generate(&env);
+        let id = client.register_invoice(&payer, &payee, &10_000u64, &50_000u64);
+
+        let zero = PublicSignals {
+            commitment: BytesN::from_array(&env, &[0u8; 32]),
+            lo_bound: 10_000,
+            hi_bound: 50_000,
+        };
+        client.settle_invoice(&payer, &id, &fixture_proof(&env), &zero, &fixture_inputs(&env));
     }
 }
