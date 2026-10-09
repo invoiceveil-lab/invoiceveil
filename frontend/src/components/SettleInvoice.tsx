@@ -25,6 +25,11 @@ export function SettleInvoice({ invoiceLookup, onSettle, txEvent }: SettleInvoic
 
 export function SettleInvoice({ invoiceLookup, onSettle, txMessage, txHash, txError }: SettleInvoiceProps) {
   const [invoiceId, setInvoiceId] = useState("1");
+  defaultInvoiceId: string;
+}
+
+export function SettleInvoice({ invoiceLookup, onSettle, txMessage, txHash, defaultInvoiceId }: SettleInvoiceProps) {
+  const [invoiceId, setInvoiceId] = useState(defaultInvoiceId);
   const [amount, setAmount] = useState("250.00");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
