@@ -5,7 +5,7 @@ import { InvoiceForm } from "./InvoiceForm";
 import { InvoiceList } from "./InvoiceList";
 import { SettleInvoice } from "./SettleInvoice";
 import { useInvoices } from "../hooks/useInvoices";
-import { truncateMiddle } from "../lib/format";
+import { formatMoneyWhole, truncateMiddle } from "../lib/format";
 import type { InvoiceRecord, TxLifecycleEvent } from "../types";
 
 type TabId = "overview" | "create" | "settle" | "feed" | "audit";
@@ -88,7 +88,7 @@ function DashboardIcon({ name }: { name: IconId }) {
 
 function formatVolume(invoices: InvoiceRecord[]): string {
   const total = invoices.reduce((sum, invoice) => sum + invoice.hiBound, 0n);
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(total) / 100);
+  return formatMoneyWhole(total);
 }
 
 export function DashboardPage({ stellar, onDisconnectToLanding }: DashboardPageProps) {
@@ -148,7 +148,7 @@ export function DashboardPage({ stellar, onDisconnectToLanding }: DashboardPageP
               <div className="overview-metrics" aria-label="Invoice metrics">
                 <div><span>Pending</span><strong>{pendingCount}</strong></div>
                 <div><span>Settled</span><strong>{settledCount}</strong></div>
-                <div><span>Tracked bounds</span><strong>{formatVolume(invoices)}</strong></div>
+                <div><span>Tracked upper bounds</span><strong>{formatVolume(invoices)}</strong></div>
                 <div><span>Wallet balance</span><strong>{stellar.balance}</strong></div>
               </div>
 
