@@ -63,6 +63,24 @@ function formatCents(cents: bigint, fractionDigits: 0 | 2): string {
  * Format an integer number of cents as USD without ever converting the amount to
  * a JS `number`, so values above 2^53 keep full precision.
  */
+const USD_AMOUNT_PATTERN = /^\d+(?:\.\d{1,2})?$/;
+
+/**
+ * Parses a user-entered USD amount into exact cents using a strict decimal
+ * grammar. Empty strings, scientific notation, hex, signs, and surrounding
+ * whitespace are rejected so the amount proved and stored matches exactly what
+ * the user typed.
+ */
+export function parseUsdToCents(value: string): bigint | null {
+  const match = USD_AMOUNT_PATTERN.exec(value);
+  if (!match) {
+    return null;
+  }
+
+  const [whole, fraction = ""] = match[0].split(".");
+  return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
+}
+
 export function formatMoney(cents: bigint): string {
   return formatCents(cents, 2);
 }
