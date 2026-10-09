@@ -199,7 +199,7 @@ function formatVerifierInputs(publicSignals: string[]) {
   };
 }
 
-function simplifyErrorMessage(error: unknown): string {
+export function simplifyErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
 
   if (message.includes("UnexpectedType")) {
